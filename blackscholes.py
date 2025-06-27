@@ -50,13 +50,9 @@ with st.sidebar.expander("Heatmap Parameters"):
     max_vol = st.number_input("Max Volatility for Heatmap", min_value=0.01, max_value=1.0, value=0.3, step=0.01, key="heat_max_vol")
 
 with st.sidebar.expander("🎯 Cross-Section Generator"):
-    option_type = st.selectbox("Option Type", ["call", "put"], key="opt_type")
+    option_type = st.selectbox("Option Type", ["Call", "Put"], key="opt_type")
     varying_param = st.selectbox("Parameter to Vary", ["Spot Price", "Strike Price", "Volatility", "Time to Maturity", "Risk-Free Rate"], key="var_param")
     y_axis_value = st.selectbox("Y-Axis Value", ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"], key="y_axis")
-    min_spot = st.number_input("Min Spot Price", value=80.0)
-    max_spot = st.number_input("Max Spot Price", value=120.0)
-    min_vol = st.number_input("Min Volatility for Heatmap", min_value=0.01, max_value=1.0, value=0.1, step=0.01)
-    max_vol = st.number_input("Max Volatility for Heatmap", min_value=0.01, max_value=1.0, value=0.3, step=0.01)
 
 # ------------------- Tabs -------------------
 tab0, tab1, tab2, tab3 = st.tabs([
