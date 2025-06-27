@@ -68,15 +68,30 @@ with tab0:
     call_col, put_col = st.columns(2)
 
     with call_col:
-        st.subheader("📘 Call Option")
-        st.markdown(f"**Price:** {call_price:.2f}")
-        st.markdown(f"**Delta:** {cd:.4f}")
-        st.markdown(f"**Gamma:** {cg:.4f}")
-        st.markdown(f"**Theta:** {ct:.2f}")
-        st.markdown(f"**Vega:** {cv:.2f}")
-        st.markdown(f"**Rho:** {cr:.2f}")
+        st.markdown(f"""
+        <div style='background: rgba(135,206,250,0.1); padding: 20px; border-radius: 12px; box-shadow: 0 0 8px rgba(135,206,250,0.3);'>
+            <h3 style='color: #64b5f6;'>📘 Call Option</h3>
+            <h2 style='color: white;'>Price: {call_price:.2f}</h2>
+            <p><strong>Delta:</strong> {cd:.4f}</p>
+            <p><strong>Gamma:</strong> {cg:.4f}</p>
+            <p><strong>Theta:</strong> {ct:.2f}</p>
+            <p><strong>Vega:</strong> {cv:.2f}</p>
+            <p><strong>Rho:</strong> {cr:.2f}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     with put_col:
+        st.markdown(f"""
+        <div style='background: rgba(255,105,180,0.1); padding: 20px; border-radius: 12px; box-shadow: 0 0 8px rgba(255,105,180,0.3);'>
+            <h3 style='color: #f06292;'>📕 Put Option</h3>
+            <h2 style='color: white;'>Price: {put_price:.2f}</h2>
+            <p><strong>Delta:</strong> {1 - cd:.4f}</p>
+            <p><strong>Gamma:</strong> {pg:.4f}</p>
+            <p><strong>Theta:</strong> {pt:.2f}</p>
+            <p><strong>Vega:</strong> {pv:.2f}</p>
+            <p><strong>Rho:</strong> {-pr:.2f}</p>
+        </div>
+        """, unsafe_allow_html=True)
         st.subheader("📕 Put Option")
         st.markdown(f"**Price:** {put_price:.2f}")
         st.markdown(f"**Delta:** {1 - cd:.4f}")
