@@ -386,9 +386,10 @@ with tab4:
         min_vol = st.number_input("Min Volatility", value=max(0.01, round(sigma - 0.1, 2)), step=0.01)
         max_vol = st.number_input("Max Volatility", value=min(1.0, round(sigma + 0.1, 2)), step=0.01)
 
-    # Keep the number of points at 10 as requested
-    spot_range = np.linspace(min_spot, max_spot, 10) # Reverted to 10 points
-    vol_range = np.linspace(min_vol, max_vol, 10)   # Reverted to 10 points
+    display_values = st.toggle("Display Values on Heatmap", value=True) # Added toggle button
+    
+    spot_range = np.linspace(min_spot, max_spot, 10)
+    vol_range = np.linspace(min_vol, max_vol, 10)
     
     call_prices = np.zeros((len(vol_range), len(spot_range)))
     put_prices = np.zeros((len(vol_range), len(spot_range)))
@@ -398,17 +399,19 @@ with tab4:
             call_prices[i, j], _, _, _, _, _ = get_option_value_and_greeks(selected_model, spot, K, T, r, vol, "call", **model_params)
             put_prices[i, j], _, _, _, _, _ = get_option_value_and_greeks(selected_model, spot, K, T, r, vol, "put", **model_params)
 
-    def plot_plotly_heatmap(prices, spot_range, vol_range, title):
-        fig = go.Figure(data=go.Heatmap(
+    def plot_plotly_heatmap(prices, spot_range, vol_range, title, show_values):
+        heatmap_trace = go.Heatmap(
             z=prices,
             x=spot_range,
             y=vol_range,
             hoverongaps=False,
             colorscale='viridis',
-            # Removed text and texttemplate for a smoother appearance
-            # text=np.around(prices, 2),
-            # texttemplate="%{text}" 
-        ))
+        )
+        if show_values: # Conditionally add text and texttemplate
+            heatmap_trace.text = np.around(prices, 2)
+            heatmap_trace.texttemplate = "%{text}"
+            
+        fig = go.Figure(data=heatmap_trace)
         fig.update_layout(
             title=title,
             xaxis_title="Spot Price",
@@ -418,9 +421,9 @@ with tab4:
 
     col1, col2 = st.columns(2)
     with col1:
-        st.plotly_chart(plot_plotly_heatmap(call_prices, spot_range, vol_range, "Call Option Prices"), use_container_width=True)
+        st.plotly_chart(plot_plotly_heatmap(call_prices, spot_range, vol_range, "Call Option Prices", display_values), use_container_width=True)
     with col2:
-        st.plotly_chart(plot_plotly_heatmap(put_prices, spot_range, vol_range, "Put Option Prices"), use_container_width=True)
+        st.plotly_chart(plot_plotly_heatmap(put_prices, spot_range, vol_range, "Put Option Prices", display_values), use_container_width=True)
 
 # ------------------- Tab 5: Cross-Section -------------------
 with tab5:
