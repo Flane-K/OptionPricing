@@ -89,8 +89,8 @@ with tab0:
     with call_col:
         st.markdown(f"""
         <div class='option-box'>
-            <h2 style='color:#64b5f6; text-align: center;'>📘 Call Option</h2>
-            <h2>Price: {call_price:.2f}</h2>
+            <h1 style='color:#64b5f6; text-align: center; font-size: 36px;'>📘 Call Option</h1>
+            <h3 style='font-size: 26px;'>Price: {call_price:.2f}</h3>
             <p><strong>Delta:</strong> {cd:.4f}</p>
             <p><strong>Gamma:</strong> {cg:.4f}</p>
             <p><strong>Theta:</strong> {ct:.2f}</p>
@@ -102,8 +102,8 @@ with tab0:
     with put_col:
         st.markdown(f"""
         <div class='option-box'>
-            <h2 style='color:#f06292; text-align: center;'>📕 Put Option</h2>
-            <h2>Price: {put_price:.2f}</h2>
+            <h1 style='color:#f06292; text-align: center; font-size: 36px;'>📕 Put Option</h1>
+            <h3 style='font-size: 26px;'>Price: {put_price:.2f}</h3>
             <p><strong>Delta:</strong> {1 - cd:.4f}</p>
             <p><strong>Gamma:</strong> {pg:.4f}</p>
             <p><strong>Theta:</strong> {pt:.2f}</p>
