@@ -138,20 +138,19 @@ def mc_greeks(S, K, T, r, sigma, option_type="call", num_simulations=10000):
 st.sidebar.markdown("## 🔧 Configure Parameters")
 selected_model = st.sidebar.selectbox("Select Pricing Model", ["Black-Scholes", "Binomial Option Pricing", "Monte Carlo Simulation"])
 
-# --- MOVED SECTION ---
-# Model-specific parameters are now here
 if selected_model == "Binomial Option Pricing":
     N_binomial = st.sidebar.slider("Number of Steps (N)", min_value=10, max_value=1000, value=100, step=10)
 elif selected_model == "Monte Carlo Simulation":
     num_simulations_mc = st.sidebar.slider("Number of Simulations", min_value=1000, max_value=100000, value=10000, step=1000)
-# --- END MOVED SECTION ---
-
 
 with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
     ticker = st.text_input("Enter Stock Ticker", value="AAPL").upper()
     
-    # Initialize defaults
+    # Initialize defaults and help texts
     spot_price, vol_est, rf_fetch = 100.0, 0.20, 0.03
+    spot_help_text = "Default value is 100.00. Enter a ticker to fetch live data."
+    vol_help_text = "Default value is 20%. Volatility is estimated from the last 30 days of historical data."
+    rf_help_text = "Default value is 3%. Risk-free rate is fetched based on the stock's market."
     currency = "$"
     
     try:
@@ -160,34 +159,43 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
         if not hist.empty:
             spot_price = hist["Close"].iloc[-1]
             currency = "₹" if ticker.endswith(".NS") else "$"
-            st.success(f"Fetched Spot Price: {currency}{spot_price:.2f}")
+            spot_help_text = f"Successfully fetched Spot Price: {currency}{spot_price:.2f}"
 
             hist30 = stock.history(period="30d")["Close"]
             log_ret = np.log(hist30 / hist30.shift(1)).dropna()
             vol_est = np.std(log_ret) * np.sqrt(252)
-            st.success(f"Estimated Volatility (30d): {vol_est:.2%}")
+            vol_help_text = f"Estimated Volatility (30d Ann.): {vol_est:.2%}"
         else:
-            st.warning("No price data. Using default spot price.")
-    except Exception:
-        st.warning("Error fetching stock data. Using defaults.")
+            spot_help_text = f"Could not find data for ticker '{ticker}'. Using default value."
+            vol_help_text = "Could not estimate volatility. Using default value."
+    except Exception as e:
+        spot_help_text = f"Error fetching stock data: {e}. Using defaults."
+        vol_help_text = "Error fetching volatility. Using default."
 
-    S = st.number_input("Spot Price", value=float(spot_price), min_value=0.01, format="%.2f")
-    sigma = st.number_input("Volatility (σ)", min_value=0.01, max_value=2.0, value=round(vol_est, 2), step=0.01)
+    S = st.number_input("Spot Price", value=float(spot_price), min_value=0.01, format="%.2f", help=spot_help_text)
+    sigma = st.number_input("Volatility (σ)", min_value=0.01, max_value=2.0, value=round(vol_est, 2), step=0.01, help=vol_help_text)
+
+    # Dynamic Risk-Free Rate Fetching
+    if ticker.endswith(".NS"):
+        rf_ticker, rf_name = "^NSITEN", "India 10Y Bond"
+    else:
+        rf_ticker, rf_name = "^IRX", "US 13W T-Bill"
 
     try:
-        rf_fetch = yf.Ticker("^IRX").history(period="1d")["Close"].iloc[-1] / 100
-        st.success(f"Fetched Risk-Free Rate (US T-Bill): {rf_fetch:.3%}")
-        if not ticker.endswith((".NS", ".BO")):
-             st.info("Using US T-Bill as risk-free rate. For non-US stocks, consider entering a local rate manually.")
+        rf_data = yf.Ticker(rf_ticker).history(period="1d")["Close"]
+        if not rf_data.empty:
+            rf_fetch = rf_data.iloc[-1] / 100
+            rf_help_text = f"Fetched {rf_name} rate: {rf_fetch:.3%}"
+        else:
+            rf_help_text = f"Could not fetch {rf_name} rate. Using default."
     except Exception:
-        st.warning("Could not fetch risk-free rate — using default.")
+        rf_help_text = f"Error fetching {rf_name} rate. Using default."
 
-    r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.2, value=float(rf_fetch), step=0.001, format="%.3f")
+    r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.2, value=float(rf_fetch), step=0.001, format="%.3f", help=rf_help_text)
 
 with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
     K = st.number_input("Strike Price", value=float(spot_price), min_value=0.01, format="%.2f")
     T = st.number_input("Time to Maturity (yrs)", min_value=0.01, max_value=5.0, value=0.5, step=0.01)
-
 
 # ------------------- Function to get pricing and greeks based on selected model -------------------
 def get_option_value_and_greeks(model, S, K, T, r, sigma, option_type, **kwargs):
@@ -330,17 +338,11 @@ with tab3:
 with tab4:
     st.header(f"Price Heatmaps vs. Spot & Volatility ({selected_model})")
     
-    # Auto-adjust ranges
-    auto_min_spot = round(S * 0.8, 2)
-    auto_max_spot = round(S * 1.2, 2)
-    auto_min_vol = max(0.01, round(sigma - 0.1, 2))
-    auto_max_vol = min(1.0, round(sigma + 0.1, 2))
-    
     with st.expander("Adjust Heatmap Parameters"):
-        min_spot = st.number_input("Min Spot Price", value=auto_min_spot)
-        max_spot = st.number_input("Max Spot Price", value=auto_max_spot)
-        min_vol = st.number_input("Min Volatility", value=auto_min_vol, step=0.01)
-        max_vol = st.number_input("Max Volatility", value=auto_max_vol, step=0.01)
+        min_spot = st.number_input("Min Spot Price", value=round(S * 0.8, 2))
+        max_spot = st.number_input("Max Spot Price", value=round(S * 1.2, 2))
+        min_vol = st.number_input("Min Volatility", value=max(0.01, round(sigma - 0.1, 2)), step=0.01)
+        max_vol = st.number_input("Max Volatility", value=min(1.0, round(sigma + 0.1, 2)), step=0.01)
 
     spot_range = np.linspace(min_spot, max_spot, 10)
     vol_range = np.linspace(min_vol, max_vol, 10)
