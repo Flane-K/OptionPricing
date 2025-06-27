@@ -144,23 +144,41 @@ elif selected_model == "Monte Carlo Simulation":
     num_simulations_mc = st.sidebar.slider("Number of Simulations", min_value=1000, max_value=100000, value=10000, step=1000)
 
 with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
-    
-    # Initialize defaults and help texts
+    # Initialize default help text for ticker
     stock_ticker_help_text = "Enter a stock ticker (e.g., AAPL). Company name will appear here."
+
+    # Initial ticker value
+    current_ticker = st.session_state.get('ticker_input', 'AAPL')
+    ticker = st.text_input("Enter Stock Ticker", value=current_ticker, help=stock_ticker_help_text).upper()
+    st.session_state['ticker_input'] = ticker # Store the current ticker in session state
+
+    # Initialize defaults and help texts for other parameters
     spot_price, vol_est, rf_fetch = 100.0, 0.20, 0.03
     spot_help_text = "Default value is 100.00. Enter a ticker to fetch live data."
     vol_help_text = "Default value is 20%. Volatility is estimated from the last 30 days of historical data."
     rf_help_text = "Default value is 3%. Risk-free rate is fetched based on the stock's market."
     currency = "$"
-
-    ticker = st.text_input("Enter Stock Ticker", value="AAPL", help=stock_ticker_help_text).upper() # Modified line
+    company_name_display = "N/A" # Initialize company name display
 
     try:
         stock = yf.Ticker(ticker)
-        # Fetch company info for the name
+        # Attempt to get company info
         info = stock.info
-        company_name = info.get('longName', ticker) # Get longName, fallback to ticker
-        stock_ticker_help_text = f"Company: {company_name}" # Update help text
+        company_name = info.get('longName', '').strip()
+        if company_name:
+            company_name_display = company_name
+            # Update the help text for the ticker input
+            stock_ticker_help_text = f"Company: {company_name_display}"
+        else:
+            stock_ticker_help_text = f"Company name not found for '{ticker}'. Check ticker or try again."
+        
+        # Now re-render the ticker input with the updated help text
+        # This is a bit tricky with Streamlit's stateless nature.
+        # The help text is determined when st.text_input is first called for a given key.
+        # To truly update it dynamically, you might need a workaround like a separate text element.
+        # For simplicity and to show the company name near the ticker, let's use st.info or st.text.
+        # Let's try placing it *after* the input, so it updates on subsequent runs.
+        # st.text_input("Enter Stock Ticker", value=ticker, help=stock_ticker_help_text) # This line would be a duplicate
 
         hist = stock.history(period="5d")
         if not hist.empty:
@@ -176,9 +194,12 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
             spot_help_text = f"Could not find data for ticker '{ticker}'. Using default value."
             vol_help_text = "Could not estimate volatility. Using default value."
     except Exception as e:
-        stock_ticker_help_text = f"Could not fetch company info for '{ticker}'. Error: {e}" # Update help text on error
+        stock_ticker_help_text = f"Error fetching company info for '{ticker}': {e}. Using default help text."
         spot_help_text = f"Error fetching stock data: {e}. Using defaults."
         vol_help_text = "Error fetching volatility. Using default."
+
+    # Display the company name directly below the ticker input, this will update reliably.
+    st.markdown(f"**Company Name**: {company_name_display}")
 
     S = st.number_input("Spot Price", value=float(spot_price), min_value=0.01, format="%.2f", help=spot_help_text)
     sigma = st.number_input("Volatility (σ)", min_value=0.01, max_value=2.0, value=round(vol_est, 2), step=0.01, help=vol_help_text)
@@ -366,8 +387,8 @@ with tab4:
     def plot_plotly_heatmap(prices, spot_range, vol_range, title):
         fig = go.Figure(data=go.Heatmap(
             z=prices,
-            x=spot_range,
-            y=vol_range,
+            x=spot_range, # Removed f-string formatting
+            y=vol_range,  # Removed f-string formatting
             colorscale='viridis',
             text=np.around(prices, 2),
             texttemplate="%{text}"
@@ -376,7 +397,7 @@ with tab4:
             title=title,
             xaxis_title="Spot Price",
             yaxis_title="Volatility",
-            yaxis=dict(autorange='reversed')
+            yaxis=dict(autorange='reversed') # Ensures higher volatility is at the top
         )
         return fig
 
