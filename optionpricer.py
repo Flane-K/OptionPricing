@@ -3,7 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 import yfinance as yf
 from scipy.stats import norm
-import pandas as pd # Added this import
+import pandas as pd # Ensure pandas is imported for DataFrame operations
 
 st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 st.title("📈 Option Pricing Visualizer")
@@ -16,7 +16,7 @@ def black_scholes(S, K, T, r, sigma, option_type="call"):
     if option_type.lower() == "call":
         return S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
     else:  # Put
-        return K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
+        return K * np.exp(-r * T) * norm.cdf(-d1) - S * norm.cdf(-d1)
 
 def bs_greeks(S, K, T, r, sigma, option_type="call"):
     """Calculates the Greeks for the Black-Scholes model."""
@@ -162,30 +162,25 @@ def get_stock_history(ticker_symbol, period):
         return pd.DataFrame() # Return empty DataFrame on error
 
 with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
-    # Initialize default help text
-    stock_ticker_help_text = "Enter a stock ticker (e.g., AAPL). Company name will appear here on hover."
-
     # Use session_state to maintain the ticker value across reruns
     current_ticker = st.session_state.get('ticker_input', 'AAPL')
 
-    # Fetch company name dynamically and update help text before st.text_input
+    # The st.text_input widget
+    ticker = st.text_input("Enter Stock Ticker", value=current_ticker).upper()
+    st.session_state['ticker_input'] = ticker # Update session state with the new ticker value
+
+    # Fetch company name dynamically and display it directly
     company_name = "N/A"
-    
-    # Use the cached function to fetch stock info
-    info = get_stock_info(current_ticker)
+    info = get_stock_info(ticker) # Use the cached function
     fetched_company_name = info.get('longName', '').strip()
     
     if fetched_company_name:
         company_name = fetched_company_name
-        stock_ticker_help_text = f"Company: {company_name}"
+        st.write(f"**Company Name:** {company_name}") # Display company name explicitly
     else:
-        stock_ticker_help_text = f"Company name not found for '{current_ticker}'. Check ticker or try again."
-    
-    # The st.text_input widget. The 'help' parameter is set here.
-    ticker = st.text_input("Enter Stock Ticker", value=current_ticker, help=stock_ticker_help_text).upper()
-    st.session_state['ticker_input'] = ticker # Update session state with the new ticker value
+        st.write(f"**Company Name:** Not found for '{ticker}'.") # Indicate if not found
 
-    # Initialize defaults for other parameters (remaining code is mostly unchanged)
+    # Initialize defaults and help texts
     spot_price, vol_est, rf_fetch = 100.0, 0.20, 0.03
     spot_help_text = "Default value is 100.00. Enter a ticker to fetch live data."
     vol_help_text = "Default value is 20%. Volatility is estimated from the last 30 days of historical data."
@@ -194,13 +189,13 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
     
     try:
         # Use the potentially updated 'ticker' variable for subsequent fetches
-        hist = get_stock_history(ticker, "5d")
+        hist = get_stock_history(ticker, "5d") # Use the cached function
         if not hist.empty:
             spot_price = hist["Close"].iloc[-1]
             currency = "₹" if ticker.endswith(".NS") else "$"
             spot_help_text = f"Successfully fetched Spot Price: {currency}{spot_price:.2f}"
 
-            hist30 = get_stock_history(ticker, "30d")["Close"]
+            hist30 = get_stock_history(ticker, "30d")["Close"] # Use the cached function
             if not hist30.empty:
                 log_ret = np.log(hist30 / hist30.shift(1)).dropna()
                 vol_est = np.std(log_ret) * np.sqrt(252)
@@ -234,6 +229,11 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
         rf_help_text = f"Error fetching {rf_name} rate. Using default."
 
     r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.2, value=float(rf_fetch), step=0.001, format="%.3f", help=rf_help_text)
+
+    # Button to clear all caches
+    if st.button("Clear All Cached Data"):
+        st.cache_data.clear()
+        st.experimental_rerun() # Rerun the app to reflect changes
 
 with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
     K = st.number_input("Strike Price", value=float(spot_price), min_value=0.01, format="%.2f")
