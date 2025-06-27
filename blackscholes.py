@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import yfinance as yf
 from scipy.stats import norm
 
-st.set_page_config(layout="wide", page_title="Vibe Coding – Option Pricing Visualizer")
+st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 
 # ------------------- Black-Scholes -------------------
 def black_scholes(S, K, T, r, sigma, option_type="call"):
@@ -27,19 +27,19 @@ def greeks(S, K, T, r, sigma):
     return delta, gamma, theta, vega, rho
 
 # ------------------- Sidebar Inputs -------------------
-st.sidebar.title("📊 Option Parameters")
-ticker = st.sidebar.text_input("Stock Ticker (optional)", "AAPL")
-try:
-    spot_price = yf.Ticker(ticker).history(period="1d")["Close"].iloc[-1]
-except:
-    spot_price = 100.0
-    st.sidebar.warning("Could not fetch price. Using default.")
+with st.sidebar.expander("📈 Option Pricing Visualizer", expanded=True):
+    ticker = st.text_input("Stock Ticker (optional)", "AAPL")
+    try:
+        spot_price = yf.Ticker(ticker).history(period="1d")["Close"].iloc[-1]
+    except:
+        spot_price = 100.0
+        st.warning("Could not fetch price. Using default.")
 
-S = st.sidebar.number_input("Spot Price", value=spot_price, min_value=0.0)
-K = st.sidebar.number_input("Strike Price", value=spot_price, min_value=0.0)
-sigma = st.sidebar.number_input("Volatility (σ)", min_value=0.01, max_value=1.0, value=0.2, step=0.01)
-T = st.sidebar.number_input("Time to Maturity (years)", min_value=0.01, max_value=2.0, value=0.5, step=0.01)
-r = st.sidebar.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.1, value=0.03, step=0.001)
+    S = st.number_input("Spot Price", value=spot_price, min_value=0.0)
+    K = st.number_input("Strike Price", value=spot_price, min_value=0.0)
+    sigma = st.number_input("Volatility (σ)", min_value=0.01, max_value=1.0, value=0.2, step=0.01)
+    T = st.number_input("Time to Maturity (years)", min_value=0.01, max_value=2.0, value=0.5, step=0.01)
+    r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.1, value=0.03, step=0.001)
 
 with st.sidebar.expander("Heatmap Parameters"):
     min_spot = st.number_input("Min Spot Price", value=80.0)
