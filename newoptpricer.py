@@ -351,7 +351,10 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
     # Button to refresh caches
     if st.button("Refresh Data"):
         st.cache_data.clear()
-        st.rerun()
+        try:
+            st.rerun() 
+        except AttributeError:
+            pass # Fallback for older Streamlit versions if st.rerun is not available
 
 with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
     K = st.number_input("Strike Price", value=float(spot_price), min_value=0.01, format="%.2f")
