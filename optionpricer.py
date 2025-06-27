@@ -358,9 +358,8 @@ with tab4:
     def plot_plotly_heatmap(prices, spot_range, vol_range, title):
         fig = go.Figure(data=go.Heatmap(
             z=prices,
-            x=[f"{s:.2f}" for s in spot_range],
-            y=[f"{v:.2f}" for v in vol_range],
-            hoverongaps=False,
+            x=spot_range,  # Pass numerical array directly
+            y=vol_range,   # Pass numerical array directly
             colorscale='viridis',
             text=np.around(prices, 2),
             texttemplate="%{text}"
@@ -368,7 +367,8 @@ with tab4:
         fig.update_layout(
             title=title,
             xaxis_title="Spot Price",
-            yaxis_title="Volatility"
+            yaxis_title="Volatility",
+            yaxis=dict(autorange='reversed') # Reverse y-axis to have higher volatility at the top
         )
         return fig
 
