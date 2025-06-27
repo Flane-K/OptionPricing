@@ -1,4 +1,4 @@
-# Vibe Coding – Options Pricing Visualizer
+# Options Pricing Visualizer
 
 A Streamlit web app that visualizes European call and put option prices using the Black-Scholes model. Includes 3D surface plots, 2D heatmaps, and interactive cross-sections.
 
