@@ -349,9 +349,9 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
     r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.2, value=float(rf_fetch), step=0.001, format="%.3f", help=rf_help_text)
 
     # Button to refresh caches
-    if st.button("Refresh Data"): # Changed button text for clarity
+    if st.button("Refresh Data"):
         st.cache_data.clear()
-        st.rerun() 
+        st.rerun()
 
 with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
     K = st.number_input("Strike Price", value=float(spot_price), min_value=0.01, format="%.2f")
@@ -422,8 +422,8 @@ with tab1:
     put_payoff = np.maximum(K - spot_range, 0) - put_price
     
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=spot_range, y=call_payoff, mode='lines', name='Call Option P/L', line=dict(color='#90CAF9')))
-    fig.add_trace(go.Scatter(x=spot_range, y=put_payoff, mode='lines', name='Put Option P/L', line=dict(color='#BB86FC')))
+    fig.add_trace(go.Scatter(x=spot_range, y=call_payoff, mode='lines', name='Call Option P/L', line=dict(color='#90CAF9'))) # Primary blue
+    fig.add_trace(go.Scatter(x=spot_range, y=put_payoff, mode='lines', name='Put Option P/L', line=dict(color='#BB86FC'))) # Muted purple
     fig.add_hline(y=0, line_dash="dash", line_color="gray")
     fig.add_vline(x=K, line_dash="dash", line_color="#03DAC6", name="Strike Price") # Teal for strike price line
 
@@ -465,7 +465,7 @@ with tab2:
         "Black-Scholes": [f"{v:.4f}" for v in [bs_call, bs_cd, bs_cg, bs_ct, bs_cv, bs_cr]],
         f"Binomial (N={n_comp})": [f"{v:.4f}" for v in [bi_call, bi_cd, bi_cg, bi_ct, bi_cv, bi_cr]],
         f"Monte Carlo (Sims={sims_comp})": [f"{v:.4f}" for v in [mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr]],
-    }), use_container_width=True, hide_row_index=True) # Hide index for cleaner look
+    }), use_container_width=True, hide_row_index=True)
     
     st.subheader("Put Option Comparison")
     st.dataframe(pd.DataFrame({
@@ -473,7 +473,7 @@ with tab2:
         "Black-Scholes": [f"{v:.4f}" for v in [bs_put, bs_pd, bs_pg, bs_pt, bs_pv, bs_pr]],
         f"Binomial (N={n_comp})": [f"{v:.4f}" for v in [bi_put, bi_pd, bi_pg, bi_pt, bi_pv, bi_pr]],
         f"Monte Carlo (Sims={sims_comp})": [f"{v:.4f}" for v in [mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr]],
-    }), use_container_width=True, hide_row_index=True) # Hide index for cleaner look
+    }), use_container_width=True, hide_row_index=True)
 
 # ------------------- Tab 3: 3D Graphs -------------------
 with tab3:
