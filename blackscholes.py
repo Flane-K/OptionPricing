@@ -31,7 +31,9 @@ def greeks(S, K, T, r, sigma):
 st.sidebar.markdown("## 🔧 Configure Parameters")
 with st.sidebar.expander("Underlying Stock Parameters", expanded=True):
     ticker = st.text_input("Enter Stock Ticker", value="AAPL").upper()
-
+    currency = "₹" if ticker.endswith(".NS") else "$"
+    st.write(f"{currency}{price:.2f}")
+    
     try:
         stock = yf.Ticker(ticker)
         hist = stock.history(period="5d")
