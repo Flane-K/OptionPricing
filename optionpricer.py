@@ -3,6 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 import yfinance as yf
 from scipy.stats import norm
+import pandas as pd # Added this import
 
 st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 st.title("📈 Option Pricing Visualizer")
@@ -143,30 +144,48 @@ if selected_model == "Binomial Option Pricing":
 elif selected_model == "Monte Carlo Simulation":
     num_simulations_mc = st.sidebar.slider("Number of Simulations", min_value=1000, max_value=100000, value=10000, step=1000)
 
+# Caching yfinance info to speed up fetches
+@st.cache_data(ttl=3600) # Cache for 1 hour
+def get_stock_info(ticker_symbol):
+    try:
+        stock_data = yf.Ticker(ticker_symbol)
+        return stock_data.info
+    except Exception:
+        return {}
+
+@st.cache_data(ttl=3600) # Cache for 1 hour
+def get_stock_history(ticker_symbol, period):
+    try:
+        stock_data = yf.Ticker(ticker_symbol)
+        return stock_data.history(period=period)
+    except Exception:
+        return pd.DataFrame() # Return empty DataFrame on error
+
 with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
     # Initialize default help text
     stock_ticker_help_text = "Enter a stock ticker (e.g., AAPL). Company name will appear here on hover."
 
-    # Fetch company name dynamically and update help text
-    # This logic needs to be *before* st.text_input to correctly set the initial help message
+    # Use session_state to maintain the ticker value across reruns
     current_ticker = st.session_state.get('ticker_input', 'AAPL')
+
+    # Fetch company name dynamically and update help text before st.text_input
     company_name = "N/A"
-    try:
-        stock = yf.Ticker(current_ticker)
-        info = stock.info
-        fetched_company_name = info.get('longName', '').strip()
-        if fetched_company_name:
-            company_name = fetched_company_name
-            stock_ticker_help_text = f"Company: {company_name}"
-        else:
-            stock_ticker_help_text = f"Company name not found for '{current_ticker}'. Check ticker or try again."
-    except Exception as e:
-        stock_ticker_help_text = f"Error fetching company info for '{current_ticker}': {e}. Using default help text."
-
+    
+    # Use the cached function to fetch stock info
+    info = get_stock_info(current_ticker)
+    fetched_company_name = info.get('longName', '').strip()
+    
+    if fetched_company_name:
+        company_name = fetched_company_name
+        stock_ticker_help_text = f"Company: {company_name}"
+    else:
+        stock_ticker_help_text = f"Company name not found for '{current_ticker}'. Check ticker or try again."
+    
+    # The st.text_input widget. The 'help' parameter is set here.
     ticker = st.text_input("Enter Stock Ticker", value=current_ticker, help=stock_ticker_help_text).upper()
-    st.session_state['ticker_input'] = ticker # Store the updated ticker in session state for next rerun
+    st.session_state['ticker_input'] = ticker # Update session state with the new ticker value
 
-    # Initialize defaults for other parameters
+    # Initialize defaults for other parameters (remaining code is mostly unchanged)
     spot_price, vol_est, rf_fetch = 100.0, 0.20, 0.03
     spot_help_text = "Default value is 100.00. Enter a ticker to fetch live data."
     vol_help_text = "Default value is 20%. Volatility is estimated from the last 30 days of historical data."
@@ -174,17 +193,20 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
     currency = "$"
     
     try:
-        stock = yf.Ticker(ticker) # Use the potentially updated ticker
-        hist = stock.history(period="5d")
+        # Use the potentially updated 'ticker' variable for subsequent fetches
+        hist = get_stock_history(ticker, "5d")
         if not hist.empty:
             spot_price = hist["Close"].iloc[-1]
             currency = "₹" if ticker.endswith(".NS") else "$"
             spot_help_text = f"Successfully fetched Spot Price: {currency}{spot_price:.2f}"
 
-            hist30 = stock.history(period="30d")["Close"]
-            log_ret = np.log(hist30 / hist30.shift(1)).dropna()
-            vol_est = np.std(log_ret) * np.sqrt(252)
-            vol_help_text = f"Estimated Volatility (30d Ann.): {vol_est:.2%}"
+            hist30 = get_stock_history(ticker, "30d")["Close"]
+            if not hist30.empty:
+                log_ret = np.log(hist30 / hist30.shift(1)).dropna()
+                vol_est = np.std(log_ret) * np.sqrt(252)
+                vol_help_text = f"Estimated Volatility (30d Ann.): {vol_est:.2%}"
+            else:
+                vol_help_text = "Could not estimate volatility from 30d history. Using default value."
         else:
             spot_help_text = f"Could not find data for ticker '{ticker}'. Using default value."
             vol_help_text = "Could not estimate volatility. Using default value."
@@ -202,7 +224,7 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
         rf_ticker, rf_name = "^IRX", "US 13W T-Bill"
 
     try:
-        rf_data = yf.Ticker(rf_ticker).history(period="1d")["Close"]
+        rf_data = get_stock_history(rf_ticker, "1d")["Close"] # Using cached function
         if not rf_data.empty:
             rf_fetch = rf_data.iloc[-1] / 100
             rf_help_text = f"Fetched {rf_name} rate: {rf_fetch:.3%}"
@@ -378,8 +400,9 @@ with tab4:
     def plot_plotly_heatmap(prices, spot_range, vol_range, title):
         fig = go.Figure(data=go.Heatmap(
             z=prices,
-            x=spot_range, # Removed f-string formatting
-            y=vol_range,  # Removed f-string formatting
+            x=[f"{s:.2f}" for s in spot_range],
+            y=[f"{v:.2f}" for v in vol_range],
+            hoverongaps=False,
             colorscale='viridis',
             text=np.around(prices, 2),
             texttemplate="%{text}"
@@ -387,8 +410,7 @@ with tab4:
         fig.update_layout(
             title=title,
             xaxis_title="Spot Price",
-            yaxis_title="Volatility",
-            yaxis=dict(autorange='reversed') # Ensures higher volatility is at the top
+            yaxis_title="Volatility"
         )
         return fig
 
