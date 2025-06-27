@@ -8,6 +8,40 @@ import pandas as pd # Ensure pandas is imported for DataFrame operations
 st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 st.title("📈 Option Pricing Visualizer")
 
+# --- Custom CSS for coloring headings and values ---
+st.markdown(
+    """
+    <style>
+    /* Color for all headings (H1, H2, H3, etc.) */
+    h1, h2, h3, h4, h5, h6 {
+        color: #BB86FC; /* A soft, muted purple */
+    }
+
+    /* Color for metric values (numbers in st.metric) */
+    [data-testid="stMetricValue"] {
+        color: #03DAC6; /* A clean teal/cyan for values */
+    }
+    
+    /* General text color for emphasis where values might appear, e.g., fetched prices */
+    strong {
+        color: #03DAC6; /* Apply the value color to bold text as well */
+    }
+
+    /* Additional styling if needed for general text elements, adjust as per observation */
+    .stMarkdown p {
+        color: #E0E0E0; /* Ensure general paragraph text remains light gray */
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+
+
+
+
 # ------------------- Black-Scholes Model -------------------
 def black_scholes(S, K, T, r, sigma, option_type="call"):
     """Calculates the Black-Scholes option price."""
