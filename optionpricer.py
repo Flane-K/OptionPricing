@@ -144,42 +144,37 @@ elif selected_model == "Monte Carlo Simulation":
     num_simulations_mc = st.sidebar.slider("Number of Simulations", min_value=1000, max_value=100000, value=10000, step=1000)
 
 with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
-    # Initialize default help text for ticker
-    stock_ticker_help_text = "Enter a stock ticker (e.g., AAPL). Company name will appear here."
+    # Initialize default help text
+    stock_ticker_help_text = "Enter a stock ticker (e.g., AAPL). Company name will appear here on hover."
 
-    # Initial ticker value
+    # Fetch company name dynamically and update help text
+    # This logic needs to be *before* st.text_input to correctly set the initial help message
     current_ticker = st.session_state.get('ticker_input', 'AAPL')
-    ticker = st.text_input("Enter Stock Ticker", value=current_ticker, help=stock_ticker_help_text).upper()
-    st.session_state['ticker_input'] = ticker # Store the current ticker in session state
+    company_name = "N/A"
+    try:
+        stock = yf.Ticker(current_ticker)
+        info = stock.info
+        fetched_company_name = info.get('longName', '').strip()
+        if fetched_company_name:
+            company_name = fetched_company_name
+            stock_ticker_help_text = f"Company: {company_name}"
+        else:
+            stock_ticker_help_text = f"Company name not found for '{current_ticker}'. Check ticker or try again."
+    except Exception as e:
+        stock_ticker_help_text = f"Error fetching company info for '{current_ticker}': {e}. Using default help text."
 
-    # Initialize defaults and help texts for other parameters
+    ticker = st.text_input("Enter Stock Ticker", value=current_ticker, help=stock_ticker_help_text).upper()
+    st.session_state['ticker_input'] = ticker # Store the updated ticker in session state for next rerun
+
+    # Initialize defaults for other parameters
     spot_price, vol_est, rf_fetch = 100.0, 0.20, 0.03
     spot_help_text = "Default value is 100.00. Enter a ticker to fetch live data."
     vol_help_text = "Default value is 20%. Volatility is estimated from the last 30 days of historical data."
     rf_help_text = "Default value is 3%. Risk-free rate is fetched based on the stock's market."
     currency = "$"
-    company_name_display = "N/A" # Initialize company name display
-
+    
     try:
-        stock = yf.Ticker(ticker)
-        # Attempt to get company info
-        info = stock.info
-        company_name = info.get('longName', '').strip()
-        if company_name:
-            company_name_display = company_name
-            # Update the help text for the ticker input
-            stock_ticker_help_text = f"Company: {company_name_display}"
-        else:
-            stock_ticker_help_text = f"Company name not found for '{ticker}'. Check ticker or try again."
-        
-        # Now re-render the ticker input with the updated help text
-        # This is a bit tricky with Streamlit's stateless nature.
-        # The help text is determined when st.text_input is first called for a given key.
-        # To truly update it dynamically, you might need a workaround like a separate text element.
-        # For simplicity and to show the company name near the ticker, let's use st.info or st.text.
-        # Let's try placing it *after* the input, so it updates on subsequent runs.
-        # st.text_input("Enter Stock Ticker", value=ticker, help=stock_ticker_help_text) # This line would be a duplicate
-
+        stock = yf.Ticker(ticker) # Use the potentially updated ticker
         hist = stock.history(period="5d")
         if not hist.empty:
             spot_price = hist["Close"].iloc[-1]
@@ -194,12 +189,8 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
             spot_help_text = f"Could not find data for ticker '{ticker}'. Using default value."
             vol_help_text = "Could not estimate volatility. Using default value."
     except Exception as e:
-        stock_ticker_help_text = f"Error fetching company info for '{ticker}': {e}. Using default help text."
         spot_help_text = f"Error fetching stock data: {e}. Using defaults."
         vol_help_text = "Error fetching volatility. Using default."
-
-    # Display the company name directly below the ticker input, this will update reliably.
-    st.markdown(f"**Company Name**: {company_name_display}")
 
     S = st.number_input("Spot Price", value=float(spot_price), min_value=0.01, format="%.2f", help=spot_help_text)
     sigma = st.number_input("Volatility (σ)", min_value=0.01, max_value=2.0, value=round(vol_est, 2), step=0.01, help=vol_help_text)
