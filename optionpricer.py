@@ -233,7 +233,7 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
     # Button to clear all caches
     if st.button("Clear All Cached Data"):
         st.cache_data.clear()
-        st.experimental_rerun() # Rerun the app to reflect changes
+        st.rerun() # Rerun the app to reflect changes
 
 with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
     K = st.number_input("Strike Price", value=float(spot_price), min_value=0.01, format="%.2f")
