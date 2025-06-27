@@ -32,18 +32,19 @@ st.sidebar.markdown("## 🔧 Configure Parameters")
 with st.sidebar.expander("Underlying Stock Parameters", expanded=True):
     ticker = st.text_input("Enter Stock Ticker", value="AAPL").upper()
 
-try:
-    stock = yf.Ticker(ticker)
-    hist = stock.history(period="5d")
-    if hist.empty:
-        raise ValueError("No price data")
-    spot_price = hist["Close"].iloc[-1]
-    currency = "₹" if ticker.endswith(".NS") else "$"
-    st.success(f"Fetched Spot Price: {currency}{spot_price:.2f}")
-except Exception as e:
-    spot_price = 100.0
-    currency = "$"
-    st.warning(f"Could not fetch price. Using default: {currency}{spot_price}")
+    try:
+        stock = yf.Ticker(ticker)
+        hist = stock.history(period="5d")
+        if hist.empty:
+            raise ValueError("No price data")
+        spot_price = hist["Close"].iloc[-1]
+        currency = "₹" if ticker.endswith(".NS") else "$"
+        st.success(f"Fetched Spot Price: {currency}{spot_price:.2f}")
+    
+    except Exception as e:
+        spot_price = 100.0
+        currency = "$"
+        st.warning(f"Could not fetch price. Using default: {currency}{spot_price}")
 
     S = st.number_input("Spot Price", value=float(spot_price), min_value=0.0)
 
