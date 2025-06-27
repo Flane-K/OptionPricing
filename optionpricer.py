@@ -230,10 +230,15 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
 
     r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.2, value=float(rf_fetch), step=0.001, format="%.3f", help=rf_help_text)
 
-    # Button to refresh all caches
-    if st.button("Refresh Cache"):
+    # Button to clear all caches
+    if st.button("Clear All Cached Data"):
         st.cache_data.clear()
-        st.rerun() # Rerun the app to reflect changes
+        # Use st.rerun() if available, otherwise just clear
+        try:
+            st.rerun() 
+        except AttributeError:
+            # Fallback for older Streamlit versions if experimental_rerun is not available
+            pass 
 
 with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
     K = st.number_input("Strike Price", value=float(spot_price), min_value=0.01, format="%.2f")
@@ -386,10 +391,21 @@ with tab4:
         min_vol = st.number_input("Min Volatility", value=max(0.01, round(sigma - 0.1, 2)), step=0.01)
         max_vol = st.number_input("Max Volatility", value=min(1.0, round(sigma + 0.1, 2)), step=0.01)
 
-    display_values = st.toggle("Display Values on Heatmap", value=True) # Added toggle button
+    display_values = st.toggle("Display Values on Heatmap", value=True) 
+
+    num_points = 10 # Default resolution if values are displayed
+    if not display_values:
+        num_points = st.slider(
+            "Heatmap Resolution (N x N grid)", 
+            min_value=5, 
+            max_value=50, 
+            value=10, 
+            step=1,
+            help="Controls the number of points in the spot and volatility ranges for a smoother heatmap."
+        )
     
-    spot_range = np.linspace(min_spot, max_spot, 10)
-    vol_range = np.linspace(min_vol, max_vol, 10)
+    spot_range = np.linspace(min_spot, max_spot, num_points)
+    vol_range = np.linspace(min_vol, max_vol, num_points)
     
     call_prices = np.zeros((len(vol_range), len(spot_range)))
     put_prices = np.zeros((len(vol_range), len(spot_range)))
@@ -407,7 +423,7 @@ with tab4:
             hoverongaps=False,
             colorscale='viridis',
         )
-        if show_values: # Conditionally add text and texttemplate
+        if show_values: 
             heatmap_trace.text = np.around(prices, 2)
             heatmap_trace.texttemplate = "%{text}"
             
