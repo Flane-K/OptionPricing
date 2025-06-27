@@ -45,7 +45,7 @@ except Exception as e:
     currency = "$"
     st.warning(f"Could not fetch price. Using default: {currency}{price}")
 
-    S = st.number_input("Spot Price", value=float(spot_price), min_value=0.0)
+    S = st.number_input("Spot Price", value=float(price), min_value=0.0)
 
     try:
         hist30 = stock.history(period="30d")["Close"]
