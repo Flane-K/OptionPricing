@@ -144,17 +144,24 @@ elif selected_model == "Monte Carlo Simulation":
     num_simulations_mc = st.sidebar.slider("Number of Simulations", min_value=1000, max_value=100000, value=10000, step=1000)
 
 with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
-    ticker = st.text_input("Enter Stock Ticker", value="AAPL").upper()
     
     # Initialize defaults and help texts
+    stock_ticker_help_text = "Enter a stock ticker (e.g., AAPL). Company name will appear here."
     spot_price, vol_est, rf_fetch = 100.0, 0.20, 0.03
     spot_help_text = "Default value is 100.00. Enter a ticker to fetch live data."
     vol_help_text = "Default value is 20%. Volatility is estimated from the last 30 days of historical data."
     rf_help_text = "Default value is 3%. Risk-free rate is fetched based on the stock's market."
     currency = "$"
-    
+
+    ticker = st.text_input("Enter Stock Ticker", value="AAPL", help=stock_ticker_help_text).upper() # Modified line
+
     try:
         stock = yf.Ticker(ticker)
+        # Fetch company info for the name
+        info = stock.info
+        company_name = info.get('longName', ticker) # Get longName, fallback to ticker
+        stock_ticker_help_text = f"Company: {company_name}" # Update help text
+
         hist = stock.history(period="5d")
         if not hist.empty:
             spot_price = hist["Close"].iloc[-1]
@@ -169,6 +176,7 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
             spot_help_text = f"Could not find data for ticker '{ticker}'. Using default value."
             vol_help_text = "Could not estimate volatility. Using default value."
     except Exception as e:
+        stock_ticker_help_text = f"Could not fetch company info for '{ticker}'. Error: {e}" # Update help text on error
         spot_help_text = f"Error fetching stock data: {e}. Using defaults."
         vol_help_text = "Error fetching volatility. Using default."
 
@@ -358,8 +366,8 @@ with tab4:
     def plot_plotly_heatmap(prices, spot_range, vol_range, title):
         fig = go.Figure(data=go.Heatmap(
             z=prices,
-            x=spot_range,  # Pass numerical array directly
-            y=vol_range,   # Pass numerical array directly
+            x=spot_range,
+            y=vol_range,
             colorscale='viridis',
             text=np.around(prices, 2),
             texttemplate="%{text}"
@@ -368,7 +376,7 @@ with tab4:
             title=title,
             xaxis_title="Spot Price",
             yaxis_title="Volatility",
-            yaxis=dict(autorange='reversed') # Reverse y-axis to have higher volatility at the top
+            yaxis=dict(autorange='reversed')
         )
         return fig
 
