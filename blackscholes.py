@@ -233,6 +233,9 @@ def plot_heatmaps():
     with col2:
         st.pyplot(fig_put)
 
+
+plot_heatmaps()
+
 # ------------------- Tab 3: Cross-Section -------------------
 with tab3:
     fixed = {"S": S, "K": K, "T": T, "r": r, "sigma": sigma}
