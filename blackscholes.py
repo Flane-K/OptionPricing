@@ -31,12 +31,12 @@ def greeks(S, K, T, r, sigma):
 st.sidebar.markdown("## 🔧 Configure Parameters")
 with st.sidebar.expander("📊 Option Parameters", expanded=True):
     
-    '''ticker = st.text_input("Stock Ticker (optional)", "AAPL")
+    #ticker = st.text_input("Stock Ticker (optional)", "AAPL")
     try:
         spot_price = yf.Ticker(ticker).history(period="1d")["Close"].iloc[-1]
     except:
         spot_price = 100.0
-        st.warning("Could not fetch price. Using default.")'''
+        st.warning("Could not fetch price. Using default.")
 
     S = st.number_input("Spot Price", value=spot_price, min_value=0.0)
     K = st.number_input("Strike Price", value=spot_price, min_value=0.0)
