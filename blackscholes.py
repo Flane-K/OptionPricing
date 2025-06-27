@@ -112,6 +112,7 @@ with tab0:
         </div>
         """, unsafe_allow_html=True)
         
+        
 # ------------------- Tab 1: 3D Graphs -------------------
 def plot_3d(option_type):
     spot_range = np.linspace(0.5*S, 1.5*S, 50)
@@ -178,16 +179,40 @@ with tab2:
 
 # ------------------- Tab 3: Cross-Section -------------------
 with tab3:
-    slice_vol = st.number_input("Fix Volatility for Cross-Section", min_value=0.01, max_value=1.0, value=sigma, step=0.01)
-    spot_range = np.linspace(0.5*S, 1.5*S, 100)
-    call_prices = [black_scholes(s, K, T, r, slice_vol, "call") for s in spot_range]
-    put_prices = [black_scholes(s, K, T, r, slice_vol, "put") for s in spot_range]
+    st.sidebar.markdown("## 🧩 Cross-Section Generator")
+    option_type = st.sidebar.selectbox("Option Type", ["call", "put"])
+    varying_param = st.sidebar.selectbox("Parameter to Vary", ["Spot Price", "Strike Price", "Volatility", "Time to Maturity", "Risk-Free Rate"])
+    y_axis_value = st.sidebar.selectbox("Y-Axis Value", ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"])
+
+    # Fixed values for parameters
+    fixed = {"S": S, "K": K, "T": T, "r": r, "sigma": sigma}
+    param_map = {
+        "Spot Price": "S",
+        "Strike Price": "K",
+        "Volatility": "sigma",
+        "Time to Maturity": "T",
+        "Risk-Free Rate": "r"
+    }
+
+    var_param_key = param_map[varying_param]
+    x_vals = np.linspace(0.5 * fixed[var_param_key], 1.5 * fixed[var_param_key], 100)
+    y_vals = []
+
+    for val in x_vals:
+        temp = fixed.copy()
+        temp[var_param_key] = val
+        if y_axis_value == "Price":
+            y = black_scholes(temp["S"], temp["K"], temp["T"], temp["r"], temp["sigma"], option_type)
+        else:
+            greeks_map = {"Delta": 0, "Gamma": 1, "Theta": 2, "Vega": 3, "Rho": 4}
+            y = greeks(temp["S"], temp["K"], temp["T"], temp["r"], temp["sigma"])[greeks_map[y_axis_value]]
+        y_vals.append(y)
 
     fig, ax = plt.subplots()
-    ax.plot(spot_range, call_prices, label="Call")
-    ax.plot(spot_range, put_prices, label="Put")
-    ax.set_xlabel("Spot Price")
-    ax.set_ylabel("Option Price")
-    ax.set_title(f"Cross-Section at Volatility = {slice_vol}")
+    ax.plot(x_vals, y_vals, label=f"{y_axis_value} vs {varying_param}")
+    ax.set_xlabel(varying_param)
+    ax.set_ylabel(y_axis_value)
+    ax.set_title(f"{option_type.capitalize()} Option: {y_axis_value} vs {varying_param}")
+    ax.grid(True)
     ax.legend()
     st.pyplot(fig)
