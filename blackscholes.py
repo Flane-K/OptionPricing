@@ -28,7 +28,8 @@ def greeks(S, K, T, r, sigma):
     return delta, gamma, theta, vega, rho
 
 # ------------------- Sidebar Inputs -------------------
-with st.sidebar.expander("Option Parameters", expanded=True):
+st.sidebar.markdown("## 🔧 Configure Parameters")
+with st.sidebar.expander("📊 Option Parameters", expanded=True):
     ticker = st.text_input("Stock Ticker (optional)", "AAPL")
     try:
         spot_price = yf.Ticker(ticker).history(period="1d")["Close"].iloc[-1]
@@ -64,15 +65,25 @@ with tab0:
     pd, pg, pt, pv, pr = greeks(S, K, T, r, sigma)
 
     st.markdown("### Option Prices & Greeks")
-    st.dataframe({
-        "Type": ["Call", "Put"],
-        "Price": [f"{call_price:.2f}", f"{put_price:.2f}"],
-        "Delta": [f"{cd:.4f}", f"{1-cd:.4f}"],
-        "Gamma": [f"{cg:.4f}", f"{pg:.4f}"],
-        "Theta": [f"{ct:.2f}", f"{pt:.2f}"],
-        "Vega": [f"{cv:.2f}", f"{pv:.2f}"],
-        "Rho": [f"{cr:.2f}", f"{-pr:.2f}"],
-    })
+    call_col, put_col = st.columns(2)
+
+    with call_col:
+        st.subheader("📘 Call Option")
+        st.markdown(f"**Price:** {call_price:.2f}")
+        st.markdown(f"**Delta:** {cd:.4f}")
+        st.markdown(f"**Gamma:** {cg:.4f}")
+        st.markdown(f"**Theta:** {ct:.2f}")
+        st.markdown(f"**Vega:** {cv:.2f}")
+        st.markdown(f"**Rho:** {cr:.2f}")
+
+    with put_col:
+        st.subheader("📕 Put Option")
+        st.markdown(f"**Price:** {put_price:.2f}")
+        st.markdown(f"**Delta:** {1 - cd:.4f}")
+        st.markdown(f"**Gamma:** {pg:.4f}")
+        st.markdown(f"**Theta:** {pt:.2f}")
+        st.markdown(f"**Vega:** {pv:.2f}")
+        st.markdown(f"**Rho:** {-pr:.2f}")
 
 # ------------------- Tab 1: 3D Graphs -------------------
 def plot_3d(option_type):
