@@ -16,7 +16,7 @@ def black_scholes(S, K, T, r, sigma, option_type="call"):
     if option_type.lower() == "call":
         return S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
     else:  # Put
-        return K * np.exp(-r * T) * norm.cdf(-d1) - S * norm.cdf(-d1)
+        return K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
 
 def bs_greeks(S, K, T, r, sigma, option_type="call"):
     """Calculates the Greeks for the Black-Scholes model."""
@@ -230,8 +230,8 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
 
     r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.2, value=float(rf_fetch), step=0.001, format="%.3f", help=rf_help_text)
 
-    # Button to refresh all caches
-    if st.button("Refresh"):
+    # Button to clear all caches
+    if st.button("Clear All Cached Data"):
         st.cache_data.clear()
         st.rerun() # Rerun the app to reflect changes
 
@@ -386,8 +386,9 @@ with tab4:
         min_vol = st.number_input("Min Volatility", value=max(0.01, round(sigma - 0.1, 2)), step=0.01)
         max_vol = st.number_input("Max Volatility", value=min(1.0, round(sigma + 0.1, 2)), step=0.01)
 
-    spot_range = np.linspace(min_spot, max_spot, 10)
-    vol_range = np.linspace(min_vol, max_vol, 10)
+    # Increase the number of points for smoother heatmaps
+    spot_range = np.linspace(min_spot, max_spot, 50) # Increased from 10 to 50
+    vol_range = np.linspace(min_vol, max_vol, 50)   # Increased from 10 to 50
     
     call_prices = np.zeros((len(vol_range), len(spot_range)))
     put_prices = np.zeros((len(vol_range), len(spot_range)))
@@ -400,12 +401,13 @@ with tab4:
     def plot_plotly_heatmap(prices, spot_range, vol_range, title):
         fig = go.Figure(data=go.Heatmap(
             z=prices,
-            x=[f"{s:.2f}" for s in spot_range],
-            y=[f"{v:.2f}" for v in vol_range],
+            x=spot_range, # No need to format for hover
+            y=vol_range,  # No need to format for hover
             hoverongaps=False,
             colorscale='viridis',
-            text=np.around(prices, 2),
-            texttemplate="%{text}"
+            # Removed text and texttemplate for a smoother appearance
+            # text=np.around(prices, 2),
+            # texttemplate="%{text}" 
         ))
         fig.update_layout(
             title=title,
