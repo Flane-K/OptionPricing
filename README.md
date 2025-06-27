@@ -17,8 +17,3 @@ pip install -r requirements.txt
 streamlit run vibe_coding.py
 ```
 
-## Deploy Online
-
-1. Push this folder to a GitHub repo
-2. Go to [https://streamlit.io/cloud](https://streamlit.io/cloud)
-3. Deploy the app by selecting the repo and `vibe_coding.py`
