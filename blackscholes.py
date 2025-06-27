@@ -56,34 +56,36 @@ with tab1:
     st.plotly_chart(plot_3d("put"), use_container_width=True)
 
 def plot_heatmap(option_type):
-    spot_range = np.linspace(0.5*S, 1.5*S, 10)
-    vol_range = np.linspace(0.1, 0.3, 10)
+    spot_range = np.round(np.linspace(0.5*S, 1.5*S, 10), 2)
+    vol_range = np.round(np.linspace(0.1, 0.3, 10), 2)
     Z = np.zeros((len(vol_range), len(spot_range)))
 
     for i, vol in enumerate(vol_range):
         for j, spot in enumerate(spot_range):
             Z[i][j] = black_scholes(spot, K, T, r, vol, option_type)
 
-    fig, ax = plt.subplots()
-    cmap = "plasma"  # You can try: 'cividis', 'inferno', 'viridis'
-    c = ax.imshow(Z, aspect='auto', cmap=cmap,
-                  extent=[spot_range[0], spot_range[-1], vol_range[0], vol_range[-1]],
-                  origin='lower', interpolation='nearest')
-    
-    ax.set_xticks(np.round(spot_range, 2))
-    ax.set_yticks(np.round(vol_range, 2))
-    ax.set_xlabel("Spot Price")
-    ax.set_ylabel("Volatility")
-    ax.set_title(f"{option_type.upper()}")
+    fig, ax = plt.subplots(figsize=(6, 5))
+    cmap = 'viridis'  # clean and perceptually uniform
+    im = ax.imshow(Z, cmap=cmap, aspect='auto', origin='lower')
 
-    # Annotate values
+    # Axis settings
+    ax.set_xticks(np.arange(len(spot_range)))
+    ax.set_yticks(np.arange(len(vol_range)))
+    ax.set_xticklabels([f"{s:.2f}" for s in spot_range], fontsize=8, rotation=45)
+    ax.set_yticklabels([f"{v:.2f}" for v in vol_range], fontsize=8)
+
+    ax.set_xlabel("Spot Price", fontsize=10)
+    ax.set_ylabel("Volatility", fontsize=10)
+    ax.set_title(f"{option_type.upper()}", fontsize=12, fontweight='bold')
+
+    # Annotate the cells
     for i in range(len(vol_range)):
         for j in range(len(spot_range)):
-            ax.text(spot_range[j], vol_range[i], f"{Z[i, j]:.2f}", color="white",
-                    ha='center', va='center', fontsize=8, fontweight='bold')
+            ax.text(j, i, f"{Z[i, j]:.2f}", ha="center", va="center", fontsize=7, color="white")
 
-    fig.colorbar(c, ax=ax)
+    fig.colorbar(im, ax=ax, shrink=0.8, label="Option Price")
     st.pyplot(fig)
+
 
 
 with tab2:
