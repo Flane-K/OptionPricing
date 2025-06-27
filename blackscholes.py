@@ -6,6 +6,7 @@ import yfinance as yf
 from scipy.stats import norm
 
 st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
+st.title("📈 Option Pricing Visualizer")
 
 # ------------------- Black-Scholes -------------------
 def black_scholes(S, K, T, r, sigma, option_type="call"):
@@ -27,7 +28,7 @@ def greeks(S, K, T, r, sigma):
     return delta, gamma, theta, vega, rho
 
 # ------------------- Sidebar Inputs -------------------
-with st.sidebar.expander("📈 Option Pricing Visualizer", expanded=True):
+with st.sidebar.expander("Option Parameters", expanded=True):
     ticker = st.text_input("Stock Ticker (optional)", "AAPL")
     try:
         spot_price = yf.Ticker(ticker).history(period="1d")["Close"].iloc[-1]
