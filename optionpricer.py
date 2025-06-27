@@ -230,8 +230,8 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
 
     r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.2, value=float(rf_fetch), step=0.001, format="%.3f", help=rf_help_text)
 
-    # Button to clear all caches
-    if st.button("Clear All Cached Data"):
+    # Button to refresh caches
+    if st.button("Refresh"):
         st.cache_data.clear()
         # Use st.rerun() if available, otherwise just clear
         try:
