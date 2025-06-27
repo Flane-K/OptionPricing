@@ -1,6 +1,9 @@
+# .streamlit/config.toml
+
 [theme]
-primaryColor="#4B8BBE"
-backgroundColor="#1E1E1E"
-secondaryBackgroundColor="#262730"
-textColor="#FFFFFF"
-font="monospace"
+base="dark"
+primaryColor="#90CAF9"  # Light Blue - For interactive elements like sliders, buttons
+backgroundColor="#1E1E1E" # Dark Gray - Main background
+secondaryBackgroundColor="#2D2D2D" # Slightly lighter Dark Gray - For containers, sidebars
+textColor="#E0E0E0" # Light Gray - Primary text color
+font="sans serif"
