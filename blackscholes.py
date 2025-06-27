@@ -207,8 +207,10 @@ with tab3:
             y = greeks(temp["S"], temp["K"], temp["T"], temp["r"], temp["sigma"])[greeks_map[y_axis_value]]
         y_vals.append(y)
 
-    fig, ax = plt.subplots()
-    ax.plot(x_vals, y_vals, label=f"{y_axis_value} vs {varying_param}")
+    fig, ax = plt.subplots(figsize=(7, 5))
+    fig.patch.set_facecolor('#0e1117')
+    ax.set_facecolor('#1e222a')
+    ax.plot(x_vals, y_vals, color='#4dd0e1', linewidth=2.2, label=f"{y_axis_value} vs {varying_param}")
     ax.set_xlabel(varying_param)
     ax.set_ylabel(y_axis_value)
     ax.set_title(f"{option_type.capitalize()} Option: {y_axis_value} vs {varying_param}")
