@@ -386,9 +386,9 @@ with tab4:
         min_vol = st.number_input("Min Volatility", value=max(0.01, round(sigma - 0.1, 2)), step=0.01)
         max_vol = st.number_input("Max Volatility", value=min(1.0, round(sigma + 0.1, 2)), step=0.01)
 
-    # Increase the number of points for smoother heatmaps
-    spot_range = np.linspace(min_spot, max_spot, 50) # Increased from 10 to 50
-    vol_range = np.linspace(min_vol, max_vol, 50)   # Increased from 10 to 50
+    # Keep the number of points at 10 as requested
+    spot_range = np.linspace(min_spot, max_spot, 10) # Reverted to 10 points
+    vol_range = np.linspace(min_vol, max_vol, 10)   # Reverted to 10 points
     
     call_prices = np.zeros((len(vol_range), len(spot_range)))
     put_prices = np.zeros((len(vol_range), len(spot_range)))
@@ -401,8 +401,8 @@ with tab4:
     def plot_plotly_heatmap(prices, spot_range, vol_range, title):
         fig = go.Figure(data=go.Heatmap(
             z=prices,
-            x=spot_range, # No need to format for hover
-            y=vol_range,  # No need to format for hover
+            x=spot_range,
+            y=vol_range,
             hoverongaps=False,
             colorscale='viridis',
             # Removed text and texttemplate for a smoother appearance
