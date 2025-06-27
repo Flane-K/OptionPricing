@@ -111,17 +111,6 @@ with tab0:
             <p><strong>Rho:</strong> {-pr:.2f}</p>
         </div>
         """, unsafe_allow_html=True)
-        st.markdown(f"""
-        <div style='background: rgba(255,105,180,0.1); padding: 20px; border-radius: 12px; box-shadow: 0 0 8px rgba(255,105,180,0.3);'>
-            <h3 style='color: #f06292;'>📕 Put Option</h3>
-            <h2 style='color: white;'>Price: {put_price:.2f}</h2>
-            <p><strong>Delta:</strong> {1 - cd:.4f}</p>
-            <p><strong>Gamma:</strong> {pg:.4f}</p>
-            <p><strong>Theta:</strong> {pt:.2f}</p>
-            <p><strong>Vega:</strong> {pv:.2f}</p>
-            <p><strong>Rho:</strong> {-pr:.2f}</p>
-        </div>
-        """, unsafe_allow_html=True)
         
 # ------------------- Tab 1: 3D Graphs -------------------
 def plot_3d(option_type):
