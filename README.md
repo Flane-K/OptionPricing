@@ -9,6 +9,7 @@ This Streamlit web app provides an interactive visualization of Call and Put opt
 - **Heatmaps**: Intuitive heatmaps showing option pricing across Spot Price and Volatility.
 - **Cross-Section Generator**: Generate 2D plots by varying one input parameter and tracking impact on price or Greeks.
 - **Dynamic Inputs**: All calculations update live based on sidebar inputs.
+- **📈 Live Stock Data**: Automatically fetches the latest stock price and historical volatility using `yfinance`.
 
 ## 📦 Dependencies
 
