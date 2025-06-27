@@ -37,15 +37,15 @@ try:
     hist = stock.history(period="5d")
     if hist.empty:
         raise ValueError("No price data")
-    price = hist["Close"].iloc[-1]
+    spot_price = hist["Close"].iloc[-1]
     currency = "₹" if ticker.endswith(".NS") else "$"
-    st.success(f"Fetched Spot Price: {currency}{price:.2f}")
+    st.success(f"Fetched Spot Price: {currency}{spot_price:.2f}")
 except Exception as e:
-    price = 100.0
+    spot_price = 100.0
     currency = "$"
-    st.warning(f"Could not fetch price. Using default: {currency}{price}")
+    st.warning(f"Could not fetch price. Using default: {currency}{spot_price}")
 
-    S = st.number_input("Spot Price", value=float(price), min_value=0.0)
+    S = st.number_input("Spot Price", value=float(spot_price), min_value=0.0)
 
     try:
         hist30 = stock.history(period="30d")["Close"]
