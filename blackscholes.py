@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import yfinance as yf
+import seaborn as sns
 from scipy.stats import norm
 
 st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
@@ -193,43 +194,44 @@ with tab1:
     st.plotly_chart(plot_3d("put"), use_container_width=True)
 
 # ------------------- Tab 2: Heatmaps -------------------
-def plot_heatmap(option_type):
+def plot_heatmaps():
     spot_range = np.round(np.linspace(min_spot, max_spot, 10), 2)
     vol_range = np.round(np.linspace(min_vol, max_vol, 10), 2)
-    Z = np.zeros((len(vol_range), len(spot_range)))
+
+    call_prices = np.zeros((len(vol_range), len(spot_range)))
+    put_prices = np.zeros((len(vol_range), len(spot_range)))
 
     for i, vol in enumerate(vol_range):
         for j, spot in enumerate(spot_range):
-            Z[i][j] = black_scholes(spot, K, T, r, vol, option_type)
+            call_prices[i, j] = black_scholes(spot, K, T, r, vol, "call")
+            put_prices[i, j] = black_scholes(spot, K, T, r, vol, "put")
 
-    fig, ax = plt.subplots(figsize=(6, 5))
-    cmap = 'viridis'
-    im = ax.imshow(Z, cmap=cmap, aspect='auto', origin='lower')
+    # Call Option Heatmap
+    fig_call, ax_call = plt.subplots(figsize=(8, 6))
+    sns.heatmap(call_prices, 
+                xticklabels=[f"{s:.2f}" for s in spot_range],
+                yticklabels=[f"{v:.2f}" for v in vol_range],
+                annot=True, fmt=".2f", cmap="viridis", ax=ax_call)
+    ax_call.set_title("Call Option Heatmap", fontsize=14, fontweight="bold")
+    ax_call.set_xlabel("Spot Price")
+    ax_call.set_ylabel("Volatility")
 
-    ax.set_xticks(np.arange(len(spot_range)))
-    ax.set_yticks(np.arange(len(vol_range)))
-    ax.set_xticklabels([f"{s:.2f}" for s in spot_range], fontsize=8, rotation=45)
-    ax.set_yticklabels([f"{v:.2f}" for v in vol_range], fontsize=8)
+    # Put Option Heatmap
+    fig_put, ax_put = plt.subplots(figsize=(8, 6))
+    sns.heatmap(put_prices, 
+                xticklabels=[f"{s:.2f}" for s in spot_range],
+                yticklabels=[f"{v:.2f}" for v in vol_range],
+                annot=True, fmt=".2f", cmap="viridis", ax=ax_put)
+    ax_put.set_title("Put Option Heatmap", fontsize=14, fontweight="bold")
+    ax_put.set_xlabel("Spot Price")
+    ax_put.set_ylabel("Volatility")
 
-    ax.set_xlabel("Spot Price", fontsize=10)
-    ax.set_ylabel("Volatility", fontsize=10)
-    ax.set_title(f"{option_type.upper()}", fontsize=12, fontweight='bold')
-
-    norm = plt.Normalize(Z.min(), Z.max())
-    for i in range(len(vol_range)):
-        for j in range(len(spot_range)):
-            color = "black" if norm(Z[i, j]) > 0.5 else "white"
-            ax.text(j, i, f"{Z[i, j]:.2f}", ha="center", va="center", fontsize=7, color=color)
-
-    fig.colorbar(im, ax=ax, shrink=0.8, label="Option Price")
-    st.pyplot(fig)
-
-with tab2:
+    # Display both
     col1, col2 = st.columns(2)
     with col1:
-        plot_heatmap("call")
+        st.pyplot(fig_call)
     with col2:
-        plot_heatmap("put")
+        st.pyplot(fig_put)
 
 # ------------------- Tab 3: Cross-Section -------------------
 with tab3:
