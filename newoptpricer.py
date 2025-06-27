@@ -3,7 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 import yfinance as yf
 from scipy.stats import norm
-import pandas as pd
+import pandas as pd # Ensure pandas is imported for DataFrame operations
 
 st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 
