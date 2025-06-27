@@ -30,19 +30,45 @@ def greeks(S, K, T, r, sigma):
 # ------------------- Sidebar Inputs -------------------
 st.sidebar.markdown("## 🔧 Configure Parameters")
 with st.sidebar.expander("📊 Option Parameters", expanded=True):
-    
-    ticker = st.text_input("Stock Ticker (optional)", "AAPL")
-    try:
-        spot_price = yf.Ticker("AAPL").history(period="1d")["Close"].iloc[-1]
-    except:
-        spot_price = 100.0
-        st.warning("Could not fetch price. Using default.")
+    ticker = st.text_input("Enter Stock Ticker", value="AAPL").upper()
 
-    S = st.number_input("Spot Price", value=spot_price, min_value=0.0)
-    K = st.number_input("Strike Price", value=spot_price, min_value=0.0)
-    sigma = st.number_input("Volatility (σ)", min_value=0.01, max_value=1.0, value=0.2, step=0.01)
-    T = st.number_input("Time to Maturity (years)", min_value=0.01, max_value=2.0, value=0.5, step=0.01)
-    r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.1, value=0.03, step=0.001)
+    try:
+        stock = yf.Ticker(ticker)
+        hist = stock.history(period="5d")
+        spot_price = hist["Close"].iloc[-1]
+        st.success(f"Fetched Spot Price: ${spot_price:.2f}")
+    except Exception:
+        spot_price = 100.0
+        st.warning("Could not fetch price — using $100.00")
+
+    S = st.number_input("Spot Price", value=float(spot_price), min_value=0.0)
+    K = st.number_input("Strike Price", value=float(spot_price), min_value=0.0)
+
+    try:
+        hist30 = stock.history(period="30d")["Close"]
+        log_ret = np.log(hist30 / hist30.shift(1)).dropna()
+        vol_est = np.std(log_ret) * np.sqrt(252)
+        st.success(f"Estimated Volatility: {vol_est:.2f}")
+    except Exception:
+        vol_est = 0.2
+        st.warning("Could not estimate volatility — using 0.20")
+
+    sigma = st.number_input("Volatility (σ)", min_value=0.01, max_value=1.0,
+                            value=round(vol_est, 2), step=0.01)
+    T = st.number_input("Time to Maturity (yrs)", min_value=0.01, max_value=2.0,
+                        value=0.5, step=0.01)
+
+    # Fetch US 3-month T-bill rate (^IRX) as proxy for risk-free rate ⚖️
+    try:
+        rf = yf.Ticker("^IRX").history(period="1d")["Close"].iloc[-1] / 100
+        st.success(f"Risk-Free Rate (3‑mo T‑bill): {rf:.3f}")
+    except Exception:
+        rf = 0.03
+        st.warning("Could not fetch risk-free rate — using 3%")
+    
+    r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.1,
+                        value=float(rf), step=0.001)
+
 
 with st.sidebar.expander("Heatmap Parameters"):
     min_spot = st.number_input("Min Spot Price", value=80.0, key="heat_min_spot")
