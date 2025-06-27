@@ -64,14 +64,33 @@ with tab0:
     cd, cg, ct, cv, cr = greeks(S, K, T, r, sigma)
     pd, pg, pt, pv, pr = greeks(S, K, T, r, sigma)
 
-    st.markdown("### Option Prices & Greeks")
+    st.markdown("## 💹 Option Prices & Greeks")
+    st.markdown("""<style>
+    .option-box {
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        color: white;
+    }
+    .option-box h2 {
+        font-size: 32px;
+        margin-bottom: 10px;
+    }
+    .option-box h3 {
+        font-size: 20px;
+        margin-top: 0;
+    }
+    </style>""", unsafe_allow_html=True)
     call_col, put_col = st.columns(2)
 
     with call_col:
         st.markdown(f"""
-        <div style='background: rgba(135,206,250,0.1); padding: 20px; border-radius: 12px; box-shadow: 0 0 8px rgba(135,206,250,0.3);'>
-            <h3 style='color: #64b5f6;'>📘 Call Option</h3>
-            <h2 style='color: white;'>Price: {call_price:.2f}</h2>
+        <div class='option-box'>
+            <h3 style='color:#64b5f6;'>📘 Call Option</h3>
+            <h2>Price: {call_price:.2f}</h2>
             <p><strong>Delta:</strong> {cd:.4f}</p>
             <p><strong>Gamma:</strong> {cg:.4f}</p>
             <p><strong>Theta:</strong> {ct:.2f}</p>
@@ -81,6 +100,17 @@ with tab0:
         """, unsafe_allow_html=True)
 
     with put_col:
+        st.markdown(f"""
+        <div class='option-box'>
+            <h3 style='color:#f06292;'>📕 Put Option</h3>
+            <h2>Price: {put_price:.2f}</h2>
+            <p><strong>Delta:</strong> {1 - cd:.4f}</p>
+            <p><strong>Gamma:</strong> {pg:.4f}</p>
+            <p><strong>Theta:</strong> {pt:.2f}</p>
+            <p><strong>Vega:</strong> {pv:.2f}</p>
+            <p><strong>Rho:</strong> {-pr:.2f}</p>
+        </div>
+        """, unsafe_allow_html=True)
         st.markdown(f"""
         <div style='background: rgba(255,105,180,0.1); padding: 20px; border-radius: 12px; box-shadow: 0 0 8px rgba(255,105,180,0.3);'>
             <h3 style='color: #f06292;'>📕 Put Option</h3>
@@ -92,14 +122,7 @@ with tab0:
             <p><strong>Rho:</strong> {-pr:.2f}</p>
         </div>
         """, unsafe_allow_html=True)
-        st.subheader("📕 Put Option")
-        st.markdown(f"**Price:** {put_price:.2f}")
-        st.markdown(f"**Delta:** {1 - cd:.4f}")
-        st.markdown(f"**Gamma:** {pg:.4f}")
-        st.markdown(f"**Theta:** {pt:.2f}")
-        st.markdown(f"**Vega:** {pv:.2f}")
-        st.markdown(f"**Rho:** {-pr:.2f}")
-
+        
 # ------------------- Tab 1: 3D Graphs -------------------
 def plot_3d(option_type):
     spot_range = np.linspace(0.5*S, 1.5*S, 50)
