@@ -27,8 +27,6 @@ def greeks(S, K, T, r, sigma):
     rho = K * T * np.exp(-r*T) * norm.cdf(d2)
     return delta, gamma, theta, vega, rho
 
-# ------------------- Sidebar Inputs -------------------
-st.sidebar.markdown("## 🔧 Configure Parameters")
 
 # ------------------- Underlying Stock Parameters -------------------
 st.sidebar.markdown("## 🔧 Configure Parameters")
@@ -37,7 +35,7 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
     ticker = st.text_input("Enter Stock Ticker", value="AAPL").upper()
 
     # Initialize defaults
-    spot_price = 100.0
+    S = 100.0
     currency = "$"
     vol_est = 0.2
     rf_fetch = 0.03
@@ -51,6 +49,7 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
             st.success(f"Fetched Spot Price: {currency}{spot_price:.2f}")
         else:
             st.warning("No price data. Using default spot price.")
+    
     except Exception:
         st.warning("Error fetching stock price. Using default.")
 
