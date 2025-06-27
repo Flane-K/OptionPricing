@@ -35,17 +35,17 @@ except:
     spot_price = 100.0
     st.sidebar.warning("Could not fetch price. Using default.")
 
-S = st.sidebar.slider("Spot Price", 0.5*spot_price, 1.5*spot_price, spot_price)
-K = st.sidebar.slider("Strike Price", 0.5*spot_price, 1.5*spot_price, spot_price)
-sigma = st.sidebar.slider("Volatility (σ)", 0.05, 1.0, 0.2)
-T = st.sidebar.slider("Time to Maturity (years)", 0.01, 2.0, 0.5)
-r = st.sidebar.slider("Risk-Free Rate (r)", 0.0, 0.1, 0.03)
+S = st.sidebar.number_input("Spot Price", value=spot_price, min_value=0.0)
+K = st.sidebar.number_input("Strike Price", value=spot_price, min_value=0.0)
+sigma = st.sidebar.number_input("Volatility (σ)", min_value=0.01, max_value=1.0, value=0.2, step=0.01)
+T = st.sidebar.number_input("Time to Maturity (years)", min_value=0.01, max_value=2.0, value=0.5, step=0.01)
+r = st.sidebar.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.1, value=0.03, step=0.001)
 
 with st.sidebar.expander("Heatmap Parameters"):
     min_spot = st.number_input("Min Spot Price", value=80.0)
     max_spot = st.number_input("Max Spot Price", value=120.0)
-    min_vol = st.slider("Min Volatility for Heatmap", 0.01, 1.0, 0.1)
-    max_vol = st.slider("Max Volatility for Heatmap", 0.01, 1.0, 0.3)
+    min_vol = st.number_input("Min Volatility for Heatmap", min_value=0.01, max_value=1.0, value=0.1, step=0.01)
+    max_vol = st.number_input("Max Volatility for Heatmap", min_value=0.01, max_value=1.0, value=0.3, step=0.01)
 
 # ------------------- Tabs -------------------
 tab0, tab1, tab2, tab3 = st.tabs([
@@ -139,7 +139,7 @@ with tab2:
 
 # ------------------- Tab 3: Cross-Section -------------------
 with tab3:
-    slice_vol = st.slider("Fix Volatility for Cross-Section", 0.05, 1.0, sigma)
+    slice_vol = st.number_input("Fix Volatility for Cross-Section", min_value=0.01, max_value=1.0, value=sigma, step=0.01)
     spot_range = np.linspace(0.5*S, 1.5*S, 100)
     call_prices = [black_scholes(s, K, T, r, slice_vol, "call") for s in spot_range]
     put_prices = [black_scholes(s, K, T, r, slice_vol, "put") for s in spot_range]
