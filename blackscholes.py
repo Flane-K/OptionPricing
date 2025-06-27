@@ -31,7 +31,7 @@ def greeks(S, K, T, r, sigma):
 st.sidebar.markdown("## 🔧 Configure Parameters")
 with st.sidebar.expander("📊 Option Parameters", expanded=True):
     
-    #ticker = st.text_input("Stock Ticker (optional)", "AAPL")
+    ticker = st.text_input("Stock Ticker (optional)", "AAPL")
     try:
         spot_price = yf.Ticker("AAPL").history(period="1d")["Close"].iloc[-1]
     except:
