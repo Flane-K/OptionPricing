@@ -87,12 +87,21 @@ with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
 
 # ------------------- Heatmap Parameters -------------------
 with st.sidebar.expander("🔥 Heatmap Parameters"):
-    min_spot = st.number_input("Min Spot Price", value=80.0, key="heat_min_spot")
-    max_spot = st.number_input("Max Spot Price", value=120.0, key="heat_max_spot")
+    # Auto-adjust spot price range ±25%
+    auto_min_spot = round(spot_price * 0.75, 2)
+    auto_max_spot = round(spot_price * 1.25, 2)
+
+    # Auto-adjust volatility range ±15% absolute (bounded to [0.01, 1.0])
+    auto_min_vol = max(0.01, round(vol_est - 0.15, 2))
+    auto_max_vol = min(1.0, round(vol_est + 0.15, 2))
+
+    min_spot = st.number_input("Min Spot Price", value=auto_min_spot, key="heat_min_spot")
+    max_spot = st.number_input("Max Spot Price", value=auto_max_spot, key="heat_max_spot")
     min_vol = st.number_input("Min Volatility", min_value=0.01, max_value=1.0,
-                              value=0.1, step=0.01, key="heat_min_vol")
+                              value=auto_min_vol, step=0.01, key="heat_min_vol")
     max_vol = st.number_input("Max Volatility", min_value=0.01, max_value=1.0,
-                              value=0.3, step=0.01, key="heat_max_vol")
+                              value=auto_max_vol, step=0.01, key="heat_max_vol")
+
 
 # ------------------- Cross-Section Generator -------------------
 with st.sidebar.expander("🎯 Cross-Section Generator"):
