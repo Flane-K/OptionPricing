@@ -37,6 +37,7 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
 
     # Initialize defaults
     S = 100.0
+    spot_price = 100.0
     currency = "$"
     vol_est = 0.2
     rf_fetch = 0.03
