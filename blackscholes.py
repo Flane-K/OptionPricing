@@ -31,7 +31,9 @@ def greeks(S, K, T, r, sigma):
 st.sidebar.markdown("## 🔧 Configure Parameters")
 with st.sidebar.expander("Underlying Stock Parameters", expanded=True):
     ticker = st.text_input("Enter Stock Ticker", value="AAPL").upper()
+    
     currency = "₹" if ticker.endswith(".NS") else "$"
+    
     st.write(f"{currency}{price:.2f}")
     
     try:
@@ -39,6 +41,9 @@ with st.sidebar.expander("Underlying Stock Parameters", expanded=True):
         hist = stock.history(period="5d")
         spot_price = hist["Close"].iloc[-1]
         st.success(f"Fetched Spot Price: ${spot_price:.2f}")
+        currency = "₹" if ticker.endswith(".NS") else "$"
+        st.write(f"{currency}{price:.2f}")
+        
     except Exception:
         spot_price = 100.0
         st.warning("Could not fetch price — using $100.00")
