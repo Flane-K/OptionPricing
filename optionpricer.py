@@ -138,6 +138,15 @@ def mc_greeks(S, K, T, r, sigma, option_type="call", num_simulations=10000):
 st.sidebar.markdown("## 🔧 Configure Parameters")
 selected_model = st.sidebar.selectbox("Select Pricing Model", ["Black-Scholes", "Binomial Option Pricing", "Monte Carlo Simulation"])
 
+# --- MOVED SECTION ---
+# Model-specific parameters are now here
+if selected_model == "Binomial Option Pricing":
+    N_binomial = st.sidebar.slider("Number of Steps (N)", min_value=10, max_value=1000, value=100, step=10)
+elif selected_model == "Monte Carlo Simulation":
+    num_simulations_mc = st.sidebar.slider("Number of Simulations", min_value=1000, max_value=100000, value=10000, step=1000)
+# --- END MOVED SECTION ---
+
+
 with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
     ticker = st.text_input("Enter Stock Ticker", value="AAPL").upper()
     
@@ -179,10 +188,6 @@ with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
     K = st.number_input("Strike Price", value=float(spot_price), min_value=0.01, format="%.2f")
     T = st.number_input("Time to Maturity (yrs)", min_value=0.01, max_value=5.0, value=0.5, step=0.01)
 
-    if selected_model == "Binomial Option Pricing":
-        N_binomial = st.slider("Number of Steps (N)", min_value=10, max_value=1000, value=100, step=10)
-    elif selected_model == "Monte Carlo Simulation":
-        num_simulations_mc = st.slider("Number of Simulations", min_value=1000, max_value=100000, value=10000, step=1000)
 
 # ------------------- Function to get pricing and greeks based on selected model -------------------
 def get_option_value_and_greeks(model, S, K, T, r, sigma, option_type, **kwargs):
@@ -271,12 +276,14 @@ with tab2:
         bs_put, bs_pd, bs_pg, bs_pt, bs_pv, bs_pr = get_option_value_and_greeks("Black-Scholes", S, K, T, r, sigma, "put")
 
         # Binomial
-        n_comp = model_params.get('N', 100)
+        n_comp = 100
+        if selected_model == "Binomial Option Pricing": n_comp = N_binomial
         bi_call, bi_cd, bi_cg, bi_ct, bi_cv, bi_cr = get_option_value_and_greeks("Binomial Option Pricing", S, K, T, r, sigma, "call", N=n_comp)
         bi_put, bi_pd, bi_pg, bi_pt, bi_pv, bi_pr = get_option_value_and_greeks("Binomial Option Pricing", S, K, T, r, sigma, "put", N=n_comp)
 
         # Monte Carlo
-        sims_comp = model_params.get('num_simulations', 10000)
+        sims_comp = 10000
+        if selected_model == "Monte Carlo Simulation": sims_comp = num_simulations_mc
         mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "call", num_simulations=sims_comp)
         mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "put", num_simulations=sims_comp)
 
@@ -284,17 +291,17 @@ with tab2:
     st.dataframe({
         "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
         "Black-Scholes": [bs_call, bs_cd, bs_cg, bs_ct, bs_cv, bs_cr],
-        "Binomial": [bi_call, bi_cd, bi_cg, bi_ct, bi_cv, bi_cr],
-        "Monte Carlo": [mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr],
-    })
+        f"Binomial (N={n_comp})": [bi_call, bi_cd, bi_cg, bi_ct, bi_cv, bi_cr],
+        f"Monte Carlo (Sims={sims_comp})": [mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr],
+    }, use_container_width=True)
     
     st.subheader("Put Option Comparison")
     st.dataframe({
         "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
         "Black-Scholes": [bs_put, bs_pd, bs_pg, bs_pt, bs_pv, bs_pr],
-        "Binomial": [bi_put, bi_pd, bi_pg, bi_pt, bi_pv, bi_pr],
-        "Monte Carlo": [mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr],
-    })
+        f"Binomial (N={n_comp})": [bi_put, bi_pd, bi_pg, bi_pt, bi_pv, bi_pr],
+        f"Monte Carlo (Sims={sims_comp})": [mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr],
+    }, use_container_width=True)
 
 # ------------------- Tab 3: 3D Graphs -------------------
 with tab3:
