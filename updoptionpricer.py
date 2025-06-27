@@ -328,13 +328,29 @@ else:
             mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "put", num_simulations=sims_comp)
         
         metrics = ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"]
-        call_data = {"Black-Scholes": [bs_call, bs_cd, bs_cg, bs_ct, bs_cv, bs_cr], f"Binomial (N={n_comp})": [bi_call, bi_cd, bi_cg, bi_ct, bi_cv, bi_cr], f"Monte Carlo (Sims={sims_comp})": [mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr]}
-        put_data = {"Black-Scholes": [bs_put, bs_pd, bs_pg, bs_pt, bs_pv, bs_pr], f"Binomial (N={n_comp})": [bi_put, bi_pd, bi_pg, bi_pt, bi_pv, bi_pr], f"Monte Carlo (Sims={sims_comp})": [mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr]}
+        
+        # Call data
+        call_df_data = {
+            "Metric": metrics,
+            "Black-Scholes": [bs_call, bs_cd, bs_cg, bs_ct, bs_cv, bs_cr],
+            f"Binomial (N={n_comp})": [bi_call, bi_cd, bi_cg, bi_ct, bi_cv, bi_cr],
+            f"Monte Carlo (Sims={sims_comp})": [mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr]
+        }
+        call_df = pd.DataFrame(call_df_data).set_index("Metric")
+
+        # Put data
+        put_df_data = {
+            "Metric": metrics,
+            "Black-Scholes": [bs_put, bs_pd, bs_pg, bs_pt, bs_pv, bs_pr],
+            f"Binomial (N={n_comp})": [bi_put, bi_pd, bi_pg, bi_pt, bi_pv, bi_pr],
+            f"Monte Carlo (Sims={sims_comp})": [mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr]
+        }
+        put_df = pd.DataFrame(put_df_data).set_index("Metric")
 
         st.subheader("Call Option Comparison")
-        st.dataframe(pd.DataFrame(call_data, index=metrics), use_container_width=True)
+        st.dataframe(call_df, use_container_width=True)
         st.subheader("Put Option Comparison")
-        st.dataframe(pd.DataFrame(put_data, index=metrics), use_container_width=True)
+        st.dataframe(put_df, use_container_width=True)
 
     with tab3:
         st.header(f"3D Price Surface ({selected_model})")
