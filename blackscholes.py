@@ -29,7 +29,7 @@ def greeks(S, K, T, r, sigma):
 
 # ------------------- Sidebar Inputs -------------------
 st.sidebar.markdown("## 🔧 Configure Parameters")
-with st.sidebar.expander("📊 Option Parameters", expanded=True):
+with st.sidebar.expander("Stock Parameters", expanded=True):
     ticker = st.text_input("Enter Stock Ticker", value="AAPL").upper()
 
     try:
@@ -42,7 +42,6 @@ with st.sidebar.expander("📊 Option Parameters", expanded=True):
         st.warning("Could not fetch price — using $100.00")
 
     S = st.number_input("Spot Price", value=float(spot_price), min_value=0.0)
-    K = st.number_input("Strike Price", value=float(spot_price), min_value=0.0)
 
     try:
         hist30 = stock.history(period="30d")["Close"]
@@ -55,8 +54,7 @@ with st.sidebar.expander("📊 Option Parameters", expanded=True):
 
     sigma = st.number_input("Volatility (σ)", min_value=0.01, max_value=1.0,
                             value=round(vol_est, 2), step=0.01)
-    T = st.number_input("Time to Maturity (yrs)", min_value=0.01, max_value=2.0,
-                        value=0.5, step=0.01)
+    
 
     # Fetch US 3-month T-bill rate (^IRX) as proxy for risk-free rate ⚖️
     try:
@@ -68,6 +66,12 @@ with st.sidebar.expander("📊 Option Parameters", expanded=True):
     
     r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.1,
                         value=float(rf), step=0.001)
+
+
+with st.sidebar.expander("Stock Parameters", expanded=True):
+    K = st.number_input("Strike Price", value=float(spot_price), min_value=0.0)
+    T = st.number_input("Time to Maturity (yrs)", min_value=0.01, max_value=2.0,
+                        value=0.5, step=0.01)
 
 
 with st.sidebar.expander("Heatmap Parameters"):
