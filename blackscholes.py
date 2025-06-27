@@ -29,7 +29,9 @@ def greeks(S, K, T, r, sigma):
 
 # ------------------- Sidebar Inputs -------------------
 st.sidebar.markdown("## 🔧 Configure Parameters")
-with st.sidebar.expander("Underlying Stock Parameters", expanded=True):
+
+# ------------------- Underlying Stock Parameters -------------------
+with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
     ticker = st.text_input("Enter Stock Ticker", value="AAPL").upper()
 
     try:
@@ -40,8 +42,7 @@ with st.sidebar.expander("Underlying Stock Parameters", expanded=True):
         spot_price = hist["Close"].iloc[-1]
         currency = "₹" if ticker.endswith(".NS") else "$"
         st.success(f"Fetched Spot Price: {currency}{spot_price:.2f}")
-    
-    except Exception as e:
+    except Exception:
         spot_price = 100.0
         currency = "$"
         st.warning(f"Could not fetch price. Using default: {currency}{spot_price}")
@@ -59,36 +60,42 @@ with st.sidebar.expander("Underlying Stock Parameters", expanded=True):
 
     sigma = st.number_input("Volatility (σ)", min_value=0.01, max_value=1.0,
                             value=round(vol_est, 2), step=0.01)
-    
 
-    # Fetch US 3-month T-bill rate (^IRX) as proxy for risk-free rate ⚖️
     try:
-        rf = yf.Ticker("^IRX").history(period="1d")["Close"].iloc[-1] / 100
-        st.success(f"Risk-Free Rate (3‑mo T‑bill): {rf:.3f}")
+        rf_fetch = yf.Ticker("^IRX").history(period="1d")["Close"].iloc[-1] / 100
+        st.success(f"Risk-Free Rate (3‑mo T‑bill): {rf_fetch:.3f}")
     except Exception:
-        rf = 0.03
+        rf_fetch = 0.03
         st.warning("Could not fetch risk-free rate — using 3%")
-    
+
     r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.1,
-                        value=float(rf), step=0.001)
+                        value=float(rf_fetch), step=0.001)
 
-
-with st.sidebar.expander("Option Parameters", expanded=True):
+# ------------------- Option Parameters -------------------
+with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
     K = st.number_input("Strike Price", value=float(spot_price), min_value=0.0)
     T = st.number_input("Time to Maturity (yrs)", min_value=0.01, max_value=2.0,
                         value=0.5, step=0.01)
 
-
-with st.sidebar.expander("Heatmap Parameters"):
+# ------------------- Heatmap Parameters -------------------
+with st.sidebar.expander("🔥 Heatmap Parameters"):
     min_spot = st.number_input("Min Spot Price", value=80.0, key="heat_min_spot")
     max_spot = st.number_input("Max Spot Price", value=120.0, key="heat_max_spot")
-    min_vol = st.number_input("Min Volatility for Heatmap", min_value=0.01, max_value=1.0, value=0.1, step=0.01, key="heat_min_vol")
-    max_vol = st.number_input("Max Volatility for Heatmap", min_value=0.01, max_value=1.0, value=0.3, step=0.01, key="heat_max_vol")
+    min_vol = st.number_input("Min Volatility", min_value=0.01, max_value=1.0,
+                              value=0.1, step=0.01, key="heat_min_vol")
+    max_vol = st.number_input("Max Volatility", min_value=0.01, max_value=1.0,
+                              value=0.3, step=0.01, key="heat_max_vol")
 
+# ------------------- Cross-Section Generator -------------------
 with st.sidebar.expander("🎯 Cross-Section Generator"):
     option_type = st.selectbox("Option Type", ["Call", "Put"], key="opt_type")
-    varying_param = st.selectbox("Parameter to Vary", ["Spot Price", "Strike Price", "Volatility", "Time to Maturity", "Risk-Free Rate"], key="var_param")
-    y_axis_value = st.selectbox("Y-Axis Value", ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"], key="y_axis")
+    varying_param = st.selectbox("Parameter to Vary",
+                                 ["Spot Price", "Strike Price", "Volatility", "Time to Maturity", "Risk-Free Rate"],
+                                 key="var_param")
+    y_axis_value = st.selectbox("Y-Axis Value",
+                                ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
+                                key="y_axis")
+
 
 # ------------------- Tabs -------------------
 tab0, tab1, tab2, tab3 = st.tabs([
