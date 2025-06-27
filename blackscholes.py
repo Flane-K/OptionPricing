@@ -243,8 +243,8 @@ def plot_heatmaps():
     with col2:
         st.pyplot(fig_put)
 
-
-plot_heatmaps()
+with tab2 :
+    plot_heatmaps()
 
 # ------------------- Tab 3: Cross-Section -------------------
 with tab3:
