@@ -27,7 +27,7 @@ st.markdown("""
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
-    /* Header styling - Changed to purple */
+    /* Header styling - purple */
     h1, h2, h3, h4, h5, h6 {
         color: #9370DB !important; /* Purple color */
         text-shadow: 0 0 10px rgba(147, 112, 219, 0.3); /* Purple shadow */
@@ -488,9 +488,9 @@ tabs = st.tabs([f"{icon} {name}" for icon, name in zip(tab_icons, tab_names)])
 
 # ------------------- Tab 0: Option Summary -------------------
 with tabs[0]:
-    st.header(f"Option Valuation ({selected_model})")
     
-    st.markdown('<div class="hover-reveal-container"><div class="hover-reveal-content">', unsafe_allow_html=True)
+    
+    st.markdown('<div class="hover-reveal-container"> st.header(f"Option Valuation ({selected_model})") <div class="hover-reveal-content">', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("🟢 Call Option")
