@@ -12,8 +12,8 @@ st.markdown("""
 <style>
     /* Global dark theme */
     .stApp {
-        background: #000000;
-        color: #000000;
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+        color: #e0e0e0;
     }
     
     /* Apply glass effect directly to Streamlit's tab content panel */
@@ -159,11 +159,91 @@ st.markdown("""
     .stSpinner > div {
         border-top-color: #40E0D0 !important;
     }
+
+    /* --- NEW Glowing Window Styles --- */
+
+    .glowing-window-container {
+        /* This is the main container for the window effect */
+        background: rgba(255, 255, 255, 0.02); /* Very subtle background, almost invisible */
+        border: 1px solid rgba(255, 255, 255, 0.05); /* Very subtle initial border */
+        border-radius: 20px;
+        padding: 20px;
+        position: relative; /* Needed for ::before pseudo-element */
+        overflow: hidden; /* Ensures the border doesn't go outside border-radius */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Subtle initial shadow */
+        transition: all 0.4s ease-in-out; /* Smooth transitions for all properties */
+        color: #e0e0e0; /* Default text color inside */
+        margin: 20px 0; /* Space around the window */
+        display: flex; /* Helps align content inside */
+        flex-direction: column; /* Content stacks vertically */
+        justify-content: space-between; /* Pushes content to top/bottom if needed */
+        min-height: 150px; /* Give it some minimum height */
+    }
+
+    /* Pseudo-element for the orange glowing border */
+    .glowing-window-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border: 3px solid transparent; /* Invisible border initially, but allocates space */
+        border-radius: 20px; /* Match container border-radius */
+        pointer-events: none; /* Allows mouse events to pass through */
+        transition: border-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+        z-index: 1; /* Ensures it's on top of background but below content */
+    }
+
+    /* Hover effect for the entire glowing window container */
+    .glowing-window-container:hover {
+        background: rgba(255, 255, 255, 0.07); /* Slightly more visible glass effect on hover */
+        border-color: rgba(255, 255, 255, 0.15); /* Slightly more visible border */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 25px rgba(255, 165, 0, 0.5); /* Stronger shadow + orange glow */
+    }
+
+    /* Orange glowing border on hover */
+    .glowing-window-container:hover::before {
+        border-color: #FFA500; /* Orange color for the border */
+        box-shadow: 0 0 20px rgba(255, 165, 0, 0.7); /* Adds a glow effect to the border itself */
+    }
+
+    /* Content area inside the glowing window that gets highlighted */
+    .glowing-window-content {
+        /* Normally subtle/invisible */
+        background-color: transparent; /* Start transparent */
+        padding: 15px;
+        border-radius: 15px;
+        margin: 10px 0; /* Space it out within the container */
+        transition: background-color 0.4s ease-in-out, transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+        color: #c0c0c0; /* Default text color for content */
+        z-index: 2; /* Ensure content is above the pseudo-border */
+    }
+
+    /* Highlight effect for the content when the parent window is hovered */
+    .glowing-window-container:hover .glowing-window-content {
+        background-color: rgba(64, 224, 208, 0.15); /* More visible turquoise from your scheme */
+        transform: translateY(-5px); /* Subtle lift effect */
+        box-shadow: 0 8px 20px rgba(64, 224, 208, 0.3); /* Turquoise glow for the content area */
+        color: #40E0D0; /* Make text within highlight area stand out */
+    }
+
+    /* Style for text inside glowing-window-content */
+    .glowing-window-content h4 {
+        color: #40E0D0 !important; /* Use your existing header color */
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 1.25em;
+    }
+    .glowing-window-content p {
+        color: #e0e0e0;
+        line-height: 1.6;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # Title with modern styling
-st.markdown('<h1 class="main-title">Option Pricing Visualizer</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-title">📈 Option Pricing Visualizer</h1>', unsafe_allow_html=True)
 
 # ------------------- Black-Scholes Model -------------------
 def black_scholes(S, K, T, r, sigma, option_type="call"):
@@ -456,32 +536,57 @@ tabs = st.tabs([f"{icon} {name}" for icon, name in zip(tab_icons, tab_names)])
 
 # ------------------- Tab 0: Option Summary -------------------
 with tabs[0]:
-    st.header(f"Option Valuation ({selected_model})")
+    st.markdown(f'<h2 class="main-title">Option Valuation ({selected_model})</h2>', unsafe_allow_html=True) # Heading within glowing window
     
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader("🟢 Call Option")
-        st.metric(label="Price", value=f"{currency} {call_price:.2f}")
+        st.markdown("""
+        <div class="glowing-window-container">
+            <div class="glowing-window-content">
+                <h4>🟢 Call Option Overview</h4>
+                <p>This section displays the calculated price and Greeks for the Call Option.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        st.markdown(st.metric(label="Price", value=f"{currency} {call_price:.2f}")._html_repr, unsafe_allow_html=True)
         gcol1, gcol2 = st.columns(2)
-        gcol1.metric(label="Delta (Δ)", value=f"{cd:.4f}")
-        gcol2.metric(label="Gamma (Γ)", value=f"{cg:.4f}")
-        gcol1.metric(label="Vega", value=f"{cv:.4f}")
-        gcol2.metric(label="Theta (Θ)", value=f"{ct:.4f}")
-        gcol1.metric(label="Rho (Ρ)", value=f"{cr:.4f}")
+        with gcol1:
+            st.markdown(st.metric(label="Delta (Δ)", value=f"{cd:.4f}")._html_repr, unsafe_allow_html=True)
+            st.markdown(st.metric(label="Vega", value=f"{cv:.4f}")._html_repr, unsafe_allow_html=True)
+            st.markdown(st.metric(label="Rho (Ρ)", value=f"{cr:.4f}")._html_repr, unsafe_allow_html=True)
+        with gcol2:
+            st.markdown(st.metric(label="Gamma (Γ)", value=f"{cg:.4f}")._html_repr, unsafe_allow_html=True)
+            st.markdown(st.metric(label="Theta (Θ)", value=f"{ct:.4f}")._html_repr, unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True) # Close glowing-window-container
 
     with col2:
-        st.subheader("🔴 Put Option")
-        st.metric(label="Price", value=f"{currency} {put_price:.2f}")
+        st.markdown("""
+        <div class="glowing-window-container">
+            <div class="glowing-window-content">
+                <h4>🔴 Put Option Overview</h4>
+                <p>This section displays the calculated price and Greeks for the Put Option.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        st.markdown(st.metric(label="Price", value=f"{currency} {put_price:.2f}")._html_repr, unsafe_allow_html=True)
         gcol1, gcol2 = st.columns(2)
-        gcol1.metric(label="Delta (Δ)", value=f"{pd:.4f}")
-        gcol2.metric(label="Gamma (Γ)", value=f"{pg:.4f}")
-        gcol1.metric(label="Vega", value=f"{pv:.4f}")
-        gcol2.metric(label="Theta (Θ)", value=f"{pt:.4f}")
-        gcol1.metric(label="Rho (Ρ)", value=f"{pr:.4f}")
+        with gcol1:
+            st.markdown(st.metric(label="Delta (Δ)", value=f"{pd:.4f}")._html_repr, unsafe_allow_html=True)
+            st.markdown(st.metric(label="Vega", value=f"{pv:.4f}")._html_repr, unsafe_allow_html=True)
+            st.markdown(st.metric(label="Rho (Ρ)", value=f"{pr:.4f}")._html_repr, unsafe_allow_html=True)
+        with gcol2:
+            st.markdown(st.metric(label="Gamma (Γ)", value=f"{pg:.4f}")._html_repr, unsafe_allow_html=True)
+            st.markdown(st.metric(label="Theta (Θ)", value=f"{pt:.4f}")._html_repr, unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True) # Close glowing-window-container
+
 
 # ------------------- Tab 1: Payoff Diagram -------------------
 with tabs[1]:
-    st.header("Profit/Loss at Expiration")
+    st.markdown("""
+    <div class="glowing-window-container">
+        <div class="glowing-window-content">
+            <h4>Profit/Loss at Expiration</h4>
+            <p>Visualize the potential profit or loss of the option at its expiration date.</p>
+        </div>
+    """, unsafe_allow_html=True)
     
     spot_range = np.linspace(S * 0.7, S * 1.3, 100)
     call_payoff = np.maximum(spot_range - K, 0) - call_price
@@ -507,11 +612,19 @@ with tabs[1]:
         xaxis_title="Stock Price at Expiration",
         yaxis_title="Profit / Loss per Share"
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.markdown(st.plotly_chart(fig, use_container_width=True)._html_repr, unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True) # Close glowing-window-container
 
 # ------------------- Tab 2: Model Comparison -------------------
 with tabs[2]:
-    st.header("Model Price Comparison")
+    st.markdown("""
+    <div class="glowing-window-container">
+        <div class="glowing-window-content">
+            <h4>Model Price Comparison</h4>
+            <p>Compare option prices and Greeks across different pricing models.</p>
+        </div>
+    """, unsafe_allow_html=True)
+
     with st.spinner("Running all models for comparison..."):
         # Black-Scholes
         bs_call, bs_cd, bs_cg, bs_ct, bs_cv, bs_cr = get_option_value_and_greeks("Black-Scholes", S, K, T, r, sigma, "call")
@@ -529,25 +642,43 @@ with tabs[2]:
         mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "call", num_simulations=sims_comp)
         mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "put", num_simulations=sims_comp)
 
-    st.subheader("Call Option Comparison")
-    st.dataframe({
+    st.markdown("""
+    <div class="glowing-window-content">
+        <h4>Call Option Comparison</h4>
+        <p>Detailed comparison of Call Option values and Greeks.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(pd.DataFrame({
         "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
         "Black-Scholes": [f"{bs_call:.4f}", f"{bs_cd:.4f}", f"{bs_cg:.4f}", f"{bs_ct:.4f}", f"{bs_cv:.4f}", f"{bs_cr:.4f}"],
         f"Binomial (N={n_comp})": [f"{bi_call:.4f}", f"{bi_cd:.4f}", f"{bi_cg:.4f}", f"{bi_ct:.4f}", f"{bi_cv:.4f}", f"{bi_cr:.4f}"],
         f"Monte Carlo (Sims={sims_comp})": [f"{mc_call:.4f}", f"{mc_cd:.4f}", f"{mc_cg:.4f}", f"{mc_ct:.4f}", f"{mc_cv:.4f}", f"{mc_cr:.4f}"],
-    }, use_container_width=True)
-    
-    st.subheader("Put Option Comparison")
-    st.dataframe({
+    }).style.to_html(), unsafe_allow_html=True) # Use .style.to_html() for dataframes
+
+    st.markdown("""
+    <div class="glowing-window-content">
+        <h4>Put Option Comparison</h4>
+        <p>Detailed comparison of Put Option values and Greeks.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown(pd.DataFrame({
         "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
         "Black-Scholes": [f"{bs_put:.4f}", f"{bs_pd:.4f}", f"{bs_pg:.4f}", f"{bs_pt:.4f}", f"{bs_pv:.4f}", f"{bs_pr:.4f}"],
         f"Binomial (N={n_comp})": [f"{bi_put:.4f}", f"{bi_pd:.4f}", f"{bi_pg:.4f}", f"{bi_pt:.4f}", f"{bi_pv:.4f}", f"{bi_pr:.4f}"],
         f"Monte Carlo (Sims={sims_comp})": [f"{mc_put:.4f}", f"{mc_pd:.4f}", f"{mc_pg:.4f}", f"{mc_pt:.4f}", f"{mc_pv:.4f}", f"{mc_pr:.4f}"],
-    }, use_container_width=True)
+    }).style.to_html(), unsafe_allow_html=True) # Use .style.to_html() for dataframes
+
+    st.markdown("</div>", unsafe_allow_html=True) # Close glowing-window-container
 
 # ------------------- Tab 3: 3D Graphs -------------------
 with tabs[3]:
-    st.header(f"3D Price Surface ({selected_model})")
+    st.markdown(f"""
+    <div class="glowing-window-container">
+        <div class="glowing-window-content">
+            <h4>3D Price Surface ({selected_model})</h4>
+            <p>Explore how option prices change with varying spot price and time to maturity.</p>
+        </div>
+    """, unsafe_allow_html=True)
     
     @st.cache_data
     def get_3d_data(option_type, model, _S, _K, _T, _r, _sigma, **kwargs):
@@ -580,13 +711,22 @@ with tabs[3]:
         )
         return fig
 
-    st.plotly_chart(plot_3d("call", selected_model, **model_params), use_container_width=True)
-    st.plotly_chart(plot_3d("put", selected_model, **model_params), use_container_width=True)
+    st.markdown(st.plotly_chart(plot_3d("call", selected_model, **model_params), use_container_width=True)._html_repr, unsafe_allow_html=True)
+    st.markdown(st.plotly_chart(plot_3d("put", selected_model, **model_params), use_container_width=True)._html_repr, unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True) # Close glowing-window-container
+
 
 # ------------------- Tab 4: Heatmaps -------------------
 with tabs[4]:
-    st.header(f"Price Heatmaps vs. Spot & Volatility ({selected_model})")
+    st.markdown(f"""
+    <div class="glowing-window-container">
+        <div class="glowing-window-content">
+            <h4>Price Heatmaps vs. Spot & Volatility ({selected_model})</h4>
+            <p>Understand option price sensitivity to changes in spot price and volatility.</p>
+        </div>
+    """, unsafe_allow_html=True)
     
+    # We place the expander for heatmap parameters outside the content div, but inside the container
     with st.expander("Adjust Heatmap Parameters"):
         min_spot = st.number_input("Min Spot Price", value=round(S * 0.8, 2), key="hm_min_spot")
         max_spot = st.number_input("Max Spot Price", value=round(S * 1.2, 2), key="hm_max_spot")
@@ -625,13 +765,33 @@ with tabs[4]:
 
     col1, col2 = st.columns(2)
     with col1:
-        st.plotly_chart(plot_plotly_heatmap(call_prices_hm, spot_range_hm, vol_range_hm, "Call Option Prices", display_values), use_container_width=True)
+        st.markdown("""
+        <div class="glowing-window-content">
+            <h4>Call Option Prices Heatmap</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown(st.plotly_chart(plot_plotly_heatmap(call_prices_hm, spot_range_hm, vol_range_hm, "Call Option Prices", display_values), use_container_width=True)._html_repr, unsafe_allow_html=True)
     with col2:
-        st.plotly_chart(plot_plotly_heatmap(put_prices_hm, spot_range_hm, vol_range_hm, "Put Option Prices", display_values), use_container_width=True)
+        st.markdown("""
+        <div class="glowing-window-content">
+            <h4>Put Option Prices Heatmap</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown(st.plotly_chart(plot_plotly_heatmap(put_prices_hm, spot_range_hm, vol_range_hm, "Put Option Prices", display_values), use_container_width=True)._html_repr, unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True) # Close glowing-window-container
+
 
 # ------------------- Tab 5: Cross-Section -------------------
 with tabs[5]:
-    st.header("Sensitivity Analysis")
+    st.markdown(f"""
+    <div class="glowing-window-container">
+        <div class="glowing-window-content">
+            <h4>Sensitivity Analysis ({selected_model})</h4>
+            <p>Analyze how option prices or Greeks react to changes in a single parameter.</p>
+        </div>
+    """, unsafe_allow_html=True)
+
     col1, col2, col3 = st.columns(3)
     option_type_cs = col1.selectbox("Option Type", ["Call", "Put"], key="opt_type_cs")
     y_axis_value = col2.selectbox("Y-Axis Value", ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"], key="y_axis_cs")
@@ -670,4 +830,5 @@ with tabs[5]:
         xaxis_title=varying_param,
         yaxis_title=y_axis_value
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.markdown(st.plotly_chart(fig, use_container_width=True)._html_repr, unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True) # Close glowing-window-container
