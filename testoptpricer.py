@@ -481,7 +481,7 @@ def create_modern_plot_theme():
     }
 
 # ------------------- TABS -------------------
-tab_icons = ['📋', '💸', '📊', '📈', '🔥', '🎯']
+tab_icons = ['�', '💸', '📊', '📈', '🔥', '🎯']
 tab_names = ["Summary", "Payoff Diagram", "Model Comparison", "3D Surface", "Heatmaps", "Cross-Section"]
 
 # Create tabs with icons
