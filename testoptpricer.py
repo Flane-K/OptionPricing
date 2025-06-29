@@ -388,7 +388,7 @@ with tab0:
         gcol1.metric(label="Delta (Δ)", value=f"{pd:.4f}")
         gcol2.metric(label="Gamma (Γ)", value=f"{pg:.4f}")
         gcol1.metric(label="Vega", value=f"{pv:.4f}")
-        gcol2.metric(label="Theta (Θ)", valuef"{pt:.4f}")
+        gcol2.metric(label="Theta (Θ)", value=f"{pt:.4f}") # THIS IS THE CORRECTED LINE
         gcol1.metric(label="Rho (Ρ)", value=f"{pr:.4f}")
 
 with tab1:
