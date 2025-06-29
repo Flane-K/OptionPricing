@@ -12,87 +12,82 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# -- Global CSS for modern glassmorphism and transitions --
-st.markdown(
-    """
-    <style>
-    /* Overall background for the app */
-    .stApp {
-        background: #121212;
-        color: #E0E0E0;
-        transition: background 0.3s ease;
-    }
+# -- Modular CSS for glassmorphism, focus blur, and rounded floating windows --
+css = '''
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-hover-bg: rgba(255, 255, 255, 0.08);
+  --focus-blur: blur(20px);
+  --default-blur: blur(10px);
+  --radius: 16px;
+}
 
-    /* Container styling for glass effect */
-    .css-18e3th9 {  /* main content container */
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(10px) !important;
-        border-radius: 16px;
-        padding: 1rem;
-        transition: background 0.3s ease, transform 0.3s ease;
-    }
+/* Cursor-following focus blur layer */
+#glass-focus {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  backdrop-filter: var(--default-blur);
+  transition: backdrop-filter 0.2s ease;
+  clip-path: circle(150px at var(--mouse-x) var(--mouse-y));
+  z-index: 9999;
+}
 
-    /* Sidebar glass effect */
-    .css-1d391kg {  /* sidebar-content */
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(10px) !important;
-        border-radius: 16px;
-        padding: 1rem;
-        transition: background 0.3s ease, transform 0.3s ease;
-    }
+div.glass-window {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--default-blur) !important;
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: backdrop-filter 0.3s ease, transform 0.2s ease;
+  position: relative;
+}
 
-    /* Glass metric cards */
-    [data-testid="metric-container"] {
-        background: rgba(255, 255, 255, 0.1) !important;
-        backdrop-filter: blur(6px) !important;
-        border-radius: 12px;
-        padding: 0.75rem;
-        transition: transform 0.2s ease;
-    }
-    [data-testid="metric-container"]:hover {
-        transform: translateY(-4px);
-    }
+div.glass-window:hover {
+  transform: translateY(-4px);
+  backdrop-filter: var(--focus-blur) !important;
+}
 
-    /* Glass expander */
-    .streamlit-expanderHeader {
-        background: rgba(255, 255, 255, 0.08) !important;
-        backdrop-filter: blur(6px) !important;
-        border-radius: 8px;
-        transition: background 0.3s ease;
-    }
+div.glass-module {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--default-blur) !important;
+  border-radius: calc(var(--radius)/2);
+  padding: 0.75rem;
+  transition: transform 0.2s ease;
+}
 
-    /* Glass tab styling */
-    .css-yt997f .css-1offfwp {
-        background: rgba(255, 255, 255, 0.08) !important;
-        backdrop-filter: blur(6px) !important;
-        border-radius: 12px 12px 0 0;
-        transition: background 0.3s ease;
-    }
-    .css-yt997f .css-1offfwp[data-selected="true"] {
-        background: rgba(255, 255, 255, 0.15) !important;
-    }
+div.glass-module:hover {
+  transform: translateY(-2px);
+}
 
-    /* Heading and text colors */
-    h1, h2, h3, h4, h5, h6 {
-        color: #BB86FC;
-        transition: color 0.3s ease;
-    }
-    .stMarkdown p, .stText, .css-0, .css-1 {
-        color: #E0E0E0;
-    }
+/* Headings & text */
+h1, h2, h3, h4, h5, h6 {
+  color: #BB86FC;
+  transition: color 0.3s ease;
+}
 
-    /* Button hover transition */
-    button {
-        transition: background 0.2s ease, transform 0.2s ease;
-    }
-    button:hover {
-        transform: translateY(-2px);
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+.stApp {
+  background: #121212;
+  color: #E0E0E0;
+}
+'''  
+# JavaScript for updating cursor position vars
+js = '''
+<script>
+window.addEventListener('mousemove', event => {
+  const root = document.documentElement;
+  root.style.setProperty('--mouse-x', event.clientX + 'px');
+  root.style.setProperty('--mouse-y', event.clientY + 'px');
+});
+</script>
+'''
 
+st.components.v1.html(f"<style>{css}</style>" + js, height=0)
+
+st.markdown("<div id='glass-focus'></div>", unsafe_allow_html=True)
 
 st.title("📈 Option Pricing Visualizer")
 
