@@ -567,22 +567,3 @@ with tab0:
         gcol1.metric(label="Rho (Ρ)", value=f"{pr:.4f}")
         st.markdown('</div>', unsafe_allow_html=True)
 
-# ------------------- Tab 1: Payoff Diagram -------------------
-with tab1:
-    st.markdown('<div class="glass-container">', unsafe_allow_html=True)
-    st.markdown('<h2 class="section-header">💰 Profit/Loss at Expiration</h2>', unsafe_allow_html=True)
-    
-    spot_range = np.linspace(S * 0.7, S * 1.3, 100)
-    call_payoff = np.maximum(spot_range - K, 0) - call_price
-    put_payoff = np.maximum(K - spot_range, 0) - put_price
-    
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=spot_range, y=call_payoff, 
-        mode='lines', name='Call Option P/L',
-        line=dict(color='#03dac6', width=3)
-    ))
-    fig.add_trace(go.Scatter(
-        x=spot_range, y=put_payoff, 
-        mode='lines', name='Put Option P/L',
-        line=dict(color='#bb86fc',
