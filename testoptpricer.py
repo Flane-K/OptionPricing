@@ -10,7 +10,6 @@ st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 # --- Modern Glassmorphic CSS ---
 st.markdown("""
 <style>
-    /* Global dark theme - Changed to dark black */
     .stApp {
         background: #000000; /* Dark black background */
         color: #e0e0e0;
