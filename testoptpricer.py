@@ -45,6 +45,56 @@ div.glass-window:hover {
   border: 1px solid var(--border-color); /* Highlight border on hover */
 }
 
+/* Force Streamlit elements inside glass-window to fit better */
+/* Target common Streamlit container divs to remove their default margins/padding */
+div.glass-window > div[data-testid] {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Specific overrides for direct text/heading elements inside glass windows */
+div.glass-window > h1,
+div.glass-window > h2,
+div.glass-window > h3,
+div.glass-window > h4,
+div.glass-window > h5,
+div.glass-window > h6,
+div.glass-window > p,
+div.glass-window > div.stMarkdown, /* For st.write and generic markdown */
+div.glass-window > div.stAlert { /* If alerts are used */
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Adjust padding/margins for specific Streamlit components within glass windows for better fit */
+div.glass-window .stPlotlyChart,
+div.glass-window .stDataFrame {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Ensure form elements like selectbox, slider, text_input also fit */
+div.glass-window .stSelectbox,
+div.glass-window .stSlider,
+div.glass-window .stTextInput,
+div.glass-window .stNumberInput,
+div.glass-window .stButton,
+div.glass-window .stExpander {
+    margin-bottom: 0.5rem !important; /* Keep a little space between elements */
+    margin-top: 0.5rem !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Ensure columns within glass windows don't have excessive internal padding */
+div.glass-window > div.st-emotion-cache-xyz-column { /* This might need specific cache hash or general column selector */
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+
 /* Custom CSS for coloring headings and values - ensuring they are visible on black */
 h1, h2, h3, h4, h5, h6 {
     color: #BB86FC !important; /* A soft, muted purple */
@@ -88,7 +138,7 @@ def black_scholes(S, K, T, r, sigma, option_type="call"):
     if option_type.lower() == "call":
         return S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
     else:  # Put
-        return K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
+        return K * np.exp(-r * T) * norm.cdf(-d1) - S * norm.cdf(-d1)
 
 def bs_greeks(S, K, T, r, sigma, option_type="call"):
     """Calculates the Greeks for the Black-Scholes model."""
