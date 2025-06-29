@@ -29,23 +29,23 @@ st.markdown("""
     }
     
     /* Header styling */
-    h1, h2, h3, h4, h5, h6 {
-        color: #8A2BE2 !important; 
-        text-shadow: 0 0 10px rgba(138, 43, 226, 0.3); /*shadow*/
-        font-weight: 600;
-    }
+    h1, h2, h3, h4, h5, h6 {
+        color: #40E0D0 !important;
+        text-shadow: 0 0 10px rgba(64, 224, 208, 0.3);
+        font-weight: 600;
+    }
     
     /* Main title */
     .main-title {
-    background: linear-gradient(45deg, #00BFFF, #FF00FF); /* Deep Sky Blue to Magenta */
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-size: 3rem !important;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 2rem;
-    text-shadow: none;
+        background: linear-gradient(45deg, #40E0D0, #8A2BE2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 3rem !important;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 2rem;
+        text-shadow: none;
     }
     
     /* Metric styling */
