@@ -5,90 +5,49 @@ import yfinance as yf
 from scipy.stats import norm
 import pandas as pd # Ensure pandas is imported for DataFrame operations
 
-# Page configuration and dark mode theme
-st.set_page_config(
-    layout="wide",
-    page_title="Option Pricing Visualizer",
-    initial_sidebar_state="expanded",
-)
+st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 
-# -- Modular CSS for glassmorphism, focus blur, and rounded floating windows --
-css = '''
+# Inject Glassmorphism CSS and Cursor Focus JS
+st.markdown("""<style>
 :root {
   --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-hover-bg: rgba(255, 255, 255, 0.08);
   --focus-blur: blur(20px);
   --default-blur: blur(10px);
   --radius: 16px;
 }
-
-/* Cursor-following focus blur layer */
 #glass-focus {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed; inset: 0;
   pointer-events: none;
   backdrop-filter: var(--default-blur);
   transition: backdrop-filter 0.2s ease;
   clip-path: circle(150px at var(--mouse-x) var(--mouse-y));
   z-index: 9999;
 }
-
 div.glass-window {
   background: var(--glass-bg) !important;
   backdrop-filter: var(--default-blur) !important;
   border-radius: var(--radius);
-  padding: 1rem;
-  margin-bottom: 1rem;
+  padding: 1rem; margin-bottom: 1rem;
   transition: backdrop-filter 0.3s ease, transform 0.2s ease;
-  position: relative;
 }
-
 div.glass-window:hover {
   transform: translateY(-4px);
   backdrop-filter: var(--focus-blur) !important;
 }
-
-div.glass-module {
-  background: var(--glass-bg) !important;
-  backdrop-filter: var(--default-blur) !important;
-  border-radius: calc(var(--radius)/2);
-  padding: 0.75rem;
-  transition: transform 0.2s ease;
-}
-
-div.glass-module:hover {
-  transform: translateY(-2px);
-}
-
-/* Headings & text */
-h1, h2, h3, h4, h5, h6 {
-  color: #BB86FC;
-  transition: color 0.3s ease;
-}
-
-.stApp {
-  background: #121212;
-  color: #E0E0E0;
-}
-'''  
-# JavaScript for updating cursor position vars
-js = '''
+</style>
 <script>
-window.addEventListener('mousemove', event => {
-  const root = document.documentElement;
-  root.style.setProperty('--mouse-x', event.clientX + 'px');
-  root.style.setProperty('--mouse-y', event.clientY + 'px');
+window.addEventListener('mousemove', e => {
+  document.documentElement.style.setProperty('--mouse-x', e.clientX + 'px');
+  document.documentElement.style.setProperty('--mouse-y', e.clientY + 'px');
 });
-</script>
-'''
-
-st.components.v1.html(f"<style>{css}</style>" + js, height=0)
-
+</script>""", unsafe_allow_html=True)
 st.markdown("<div id='glass-focus'></div>", unsafe_allow_html=True)
 
+# Wrapper to create glass window section
+def glass_wrap(func, *args, **kwargs):
+    st.markdown("<div class='glass-window'>", unsafe_allow_html=True)
+    func(*args, **kwargs)
+    st.markdown("</div>", unsafe_allow_html=True)
 st.title("📈 Option Pricing Visualizer")
 
 # --- Custom CSS for coloring headings and values ---
