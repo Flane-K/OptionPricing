@@ -5,10 +5,9 @@ import yfinance as yf
 from scipy.stats import norm
 import pandas as pd # Ensure pandas is imported for DataFrame operations
 
-st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
-
 # Inject Glassmorphism CSS and Cursor Focus JS
-st.markdown("""<style>
+st.markdown("""
+<style>
 :root {
   --glass-bg: rgba(255, 255, 255, 0.05);
   --focus-blur: blur(20px);
@@ -40,15 +39,19 @@ window.addEventListener('mousemove', e => {
   document.documentElement.style.setProperty('--mouse-x', e.clientX + 'px');
   document.documentElement.style.setProperty('--mouse-y', e.clientY + 'px');
 });
-</script>""", unsafe_allow_html=True)
+</script>
+""", unsafe_allow_html=True)
 st.markdown("<div id='glass-focus'></div>", unsafe_allow_html=True)
 
-# Wrapper to create glass window section
+# Helper to create a glassmorphism window
 def glass_wrap(func, *args, **kwargs):
     st.markdown("<div class='glass-window'>", unsafe_allow_html=True)
     func(*args, **kwargs)
     st.markdown("</div>", unsafe_allow_html=True)
-st.title("📈 Option Pricing Visualizer")
+
+
+st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
+glass_wrap(st.title, "📈 Option Pricing Visualizer")
 
 # --- Custom CSS for coloring headings and values ---
 st.markdown(
@@ -78,10 +81,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-
-
-
 
 
 # ------------------- Black-Scholes Model -------------------
@@ -212,7 +211,7 @@ def mc_greeks(S, K, T, r, sigma, option_type="call", num_simulations=10000):
     return delta, gamma, theta, vega, rho
 
 # ------------------- Sidebar Controls -------------------
-st.sidebar.markdown("## 🔧 Configure Parameters")
+glass_wrap(st.sidebar.markdown, "## 🔧 Configure Parameters")
 selected_model = st.sidebar.selectbox("Select Pricing Model", ["Black-Scholes", "Binomial Option Pricing", "Monte Carlo Simulation"])
 
 if selected_model == "Binomial Option Pricing":
@@ -354,31 +353,31 @@ tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
 
 # ------------------- Tab 0: Option Summary -------------------
 with tab0:
-    st.header(f"Option Valuation ({selected_model})")
+    glass_wrap(st.header, f"Option Valuation ({selected_model})")
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader("Call Option")
-        st.metric(label="Price", value=f"{currency} {call_price:.2f}")
+        glass_wrap(st.subheader, "Call Option")
+        glass_wrap(st.metric, label="Price", value=f"{currency} {call_price:.2f}")
         gcol1, gcol2 = st.columns(2)
-        gcol1.metric(label="Delta (Δ)", value=f"{cd:.4f}")
-        gcol2.metric(label="Gamma (Γ)", value=f"{cg:.4f}")
-        gcol1.metric(label="Vega", value=f"{cv:.4f}")
-        gcol2.metric(label="Theta (Θ)", value=f"{ct:.4f}")
-        gcol1.metric(label="Rho (Ρ)", value=f"{cr:.4f}")
+        glass_wrap(gcol1.metric, label="Delta (Δ)", value=f"{cd:.4f}")
+        glass_wrap(gcol2.metric, label="Gamma (Γ)", value=f"{cg:.4f}")
+        glass_wrap(gcol1.metric, label="Vega", value=f"{cv:.4f}")
+        glass_wrap(gcol2.metric, label="Theta (Θ)", value=f"{ct:.4f}")
+        glass_wrap(gcol1.metric, label="Rho (Ρ)", value=f"{cr:.4f}")
 
     with col2:
-        st.subheader("Put Option")
-        st.metric(label="Price", value=f"{currency} {put_price:.2f}")
+        glass_wrap(st.subheader, "Put Option")
+        glass_wrap(st.metric, label="Price", value=f"{currency} {put_price:.2f}")
         gcol1, gcol2 = st.columns(2)
-        gcol1.metric(label="Delta (Δ)", value=f"{pd:.4f}")
-        gcol2.metric(label="Gamma (Γ)", value=f"{pg:.4f}")
-        gcol1.metric(label="Vega", value=f"{pv:.4f}")
-        gcol2.metric(label="Theta (Θ)", value=f"{pt:.4f}")
-        gcol1.metric(label="Rho (Ρ)", value=f"{pr:.4f}")
+        glass_wrap(gcol1.metric, label="Delta (Δ)", value=f"{pd:.4f}")
+        glass_wrap(gcol2.metric, label="Gamma (Γ)", value=f"{pg:.4f}")
+        glass_wrap(gcol1.metric, label="Vega", value=f"{pv:.4f}")
+        glass_wrap(gcol2.metric, label="Theta (Θ)", value=f"{pt:.4f}")
+        glass_wrap(gcol1.metric, label="Rho (Ρ)", value=f"{pr:.4f}")
 
 # ------------------- Tab 1: Payoff Diagram -------------------
 with tab1:
-    st.header("Profit/Loss at Expiration")
+    glass_wrap(st.header, "Profit/Loss at Expiration")
     spot_range = np.linspace(S * 0.7, S * 1.3, 100)
     
     call_payoff = np.maximum(spot_range - K, 0) - call_price
@@ -396,11 +395,11 @@ with tab1:
         yaxis_title="Profit / Loss per Share",
         legend_title="Option Type"
     )
-    st.plotly_chart(fig, use_container_width=True)
+    glass_wrap(st.plotly_chart, fig, use_container_width=True)
 
 # ------------------- Tab 2: Model Comparison -------------------
 with tab2:
-    st.header("Model Price Comparison")
+    glass_wrap(st.header, "Model Price Comparison")
     with st.spinner("Running all models for comparison..."):
         # Black-Scholes
         bs_call, bs_cd, bs_cg, bs_ct, bs_cv, bs_cr = get_option_value_and_greeks("Black-Scholes", S, K, T, r, sigma, "call")
@@ -418,16 +417,16 @@ with tab2:
         mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "call", num_simulations=sims_comp)
         mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "put", num_simulations=sims_comp)
 
-    st.subheader("Call Option Comparison")
-    st.dataframe({
+    glass_wrap(st.subheader, "Call Option Comparison")
+    glass_wrap(st.dataframe, {
         "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
         "Black-Scholes": [bs_call, bs_cd, bs_cg, bs_ct, bs_cv, bs_cr],
         f"Binomial (N={n_comp})": [bi_call, bi_cd, bi_cg, bi_ct, bi_cv, bi_cr],
         f"Monte Carlo (Sims={sims_comp})": [mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr],
     }, use_container_width=True)
     
-    st.subheader("Put Option Comparison")
-    st.dataframe({
+    glass_wrap(st.subheader, "Put Option Comparison")
+    glass_wrap(st.dataframe, {
         "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
         "Black-Scholes": [bs_put, bs_pd, bs_pg, bs_pt, bs_pv, bs_pr],
         f"Binomial (N={n_comp})": [bi_put, bi_pd, bi_pg, bi_pt, bi_pv, bi_pr],
@@ -436,7 +435,7 @@ with tab2:
 
 # ------------------- Tab 3: 3D Graphs -------------------
 with tab3:
-    st.header(f"3D Price Surface ({selected_model})")
+    glass_wrap(st.header, f"3D Price Surface ({selected_model})")
     def plot_3d(option_type, model, **kwargs):
         spot_range = np.linspace(0.5*S, 1.5*S, 30)
         time_range = np.linspace(T, 0.01, 30)
@@ -454,12 +453,12 @@ with tab3:
             margin=dict(l=0, r=0, b=0, t=40))
         return fig
 
-    st.plotly_chart(plot_3d("call", selected_model, **model_params), use_container_width=True)
-    st.plotly_chart(plot_3d("put", selected_model, **model_params), use_container_width=True)
+    glass_wrap(st.plotly_chart, plot_3d("call", selected_model, **model_params), use_container_width=True)
+    glass_wrap(st.plotly_chart, plot_3d("put", selected_model, **model_params), use_container_width=True)
 
 # ------------------- Tab 4: Heatmaps -------------------
 with tab4:
-    st.header(f"Price Heatmaps vs. Spot & Volatility ({selected_model})")
+    glass_wrap(st.header, f"Price Heatmaps vs. Spot & Volatility ({selected_model})")
     
     with st.expander("Adjust Heatmap Parameters"):
         min_spot = st.number_input("Min Spot Price", value=round(S * 0.8, 2))
@@ -513,13 +512,13 @@ with tab4:
 
     col1, col2 = st.columns(2)
     with col1:
-        st.plotly_chart(plot_plotly_heatmap(call_prices, spot_range, vol_range, "Call Option Prices", display_values), use_container_width=True)
+        glass_wrap(st.plotly_chart, plot_plotly_heatmap(call_prices, spot_range, vol_range, "Call Option Prices", display_values), use_container_width=True)
     with col2:
-        st.plotly_chart(plot_plotly_heatmap(put_prices, spot_range, vol_range, "Put Option Prices", display_values), use_container_width=True)
+        glass_wrap(st.plotly_chart, plot_plotly_heatmap(put_prices, spot_range, vol_range, "Put Option Prices", display_values), use_container_width=True)
 
 # ------------------- Tab 5: Cross-Section -------------------
 with tab5:
-    st.header("Sensitivity Analysis")
+    glass_wrap(st.header, "Sensitivity Analysis")
     col1, col2, col3 = st.columns(3)
     option_type_cs = col1.selectbox("Option Type", ["Call", "Put"], key="opt_type_cs")
     y_axis_value = col2.selectbox("Y-Axis Value", ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"], key="y_axis_cs")
@@ -547,4 +546,4 @@ with tab5:
         xaxis_title=varying_param,
         yaxis_title=y_axis_value
     )
-    st.plotly_chart(fig, use_container_width=True)
+    glass_wrap(st.plotly_chart, fig, use_container_width=True)
