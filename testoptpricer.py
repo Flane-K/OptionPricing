@@ -10,6 +10,7 @@ st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 # --- Modern Glassmorphic CSS ---
 st.markdown("""
 <style>
+    /* Global dark theme - Changed to dark black */
     .stApp {
         background: #000000; /* Dark black background */
         color: #e0e0e0;
@@ -27,7 +28,7 @@ st.markdown("""
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
-    /* Header styling - purple */
+    /* Header styling - Changed to purple */
     h1, h2, h3, h4, h5, h6 {
         color: #9370DB !important; /* Purple color */
         text-shadow: 0 0 10px rgba(147, 112, 219, 0.3); /* Purple shadow */
@@ -480,7 +481,7 @@ def create_modern_plot_theme():
     }
 
 # ------------------- TABS -------------------
-tab_icons = ['�', '💸', '📊', '📈', '🔥', '🎯']
+tab_icons = ['📋', '💸', '📊', '📈', '🔥', '🎯']
 tab_names = ["Summary", "Payoff Diagram", "Model Comparison", "3D Surface", "Heatmaps", "Cross-Section"]
 
 # Create tabs with icons
@@ -488,9 +489,10 @@ tabs = st.tabs([f"{icon} {name}" for icon, name in zip(tab_icons, tab_names)])
 
 # ------------------- Tab 0: Option Summary -------------------
 with tabs[0]:
+    st.header(f"Option Valuation ({selected_model})")
     
-    
-    st.markdown('<div class="hover-reveal-container"> st.header(f"Option Valuation ({selected_model})") <div class="hover-reveal-content">', unsafe_allow_html=True)
+    # Corrected placement: HTML div opens, then Streamlit content, then HTML div closes.
+    st.markdown('<div class="hover-reveal-container"><div class="hover-reveal-content">', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("🟢 Call Option")
@@ -588,6 +590,7 @@ with tabs[2]:
 with tabs[3]:
     st.header(f"3D Price Surface ({selected_model})")
     
+    st.markdown('<div class="hover-reveal-container"><div class="hover-reveal-content">', unsafe_allow_html=True)
     @st.cache_data
     def get_3d_data(option_type, model, _S, _K, _T, _r, _sigma, **kwargs):
         spot_range = np.linspace(0.5*_S, 1.5*_S, 30)
@@ -619,7 +622,6 @@ with tabs[3]:
         )
         return fig
 
-    st.markdown('<div class="hover-reveal-container"><div class="hover-reveal-content">', unsafe_allow_html=True)
     st.plotly_chart(plot_3d("call", selected_model, **model_params), use_container_width=True)
     st.plotly_chart(plot_3d("put", selected_model, **model_params), use_container_width=True)
     st.markdown('</div></div>', unsafe_allow_html=True)
