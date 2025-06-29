@@ -4,161 +4,243 @@ import plotly.graph_objects as go
 import yfinance as yf
 from scipy.stats import norm
 import pandas as pd
-import contextlib
 
-# --- Custom CSS for Glassmorphism and Content Containment ---
-st.markdown("""
-<style>
-:root {
-  --glass-bg: rgba(255, 255, 255, 0.08); /* Slightly more opaque white for visibility on black */
-  --focus-blur: blur(20px);
-  --default-blur: blur(10px); /* Provides the frosted effect */
-  --radius: 16px;
-  --border-color: rgba(187, 134, 252, 0.8); /* Stronger muted purple for border */
-}
+st.set_page_config(layout="wide", page_title="Option Pricing Visualizer", initial_sidebar_state="expanded")
 
-/* Overall app solid black background */
-.stApp {
-    background-color: black !important;
-}
+# --- Enhanced Glassmorphic CSS Styling ---
+st.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    /* Main app styling */
+    .stApp {
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #0a0a0a 100%);
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Glassmorphic container base */
+    .glass-container {
+        background: rgba(15, 25, 35, 0.25);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(139, 69, 255, 0.2);
+        border-radius: 20px;
+        padding: 25px;
+        margin: 15px 0;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .glass-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(139, 69, 255, 0.4), transparent);
+    }
+    
+    .glass-container:hover {
+        border: 1px solid rgba(139, 69, 255, 0.6);
+        box-shadow: 
+            0 12px 40px rgba(139, 69, 255, 0.15),
+            0 8px 32px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    /* Title styling */
+    .main-title {
+        background: linear-gradient(135deg, #64b5f6 0%, #bb86fc 50%, #03dac6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 3.5rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 2rem;
+        text-shadow: 0 0 30px rgba(139, 69, 255, 0.3);
+    }
+    
+    /* Section headers */
+    .section-header {
+        color: #bb86fc;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        text-shadow: 0 0 20px rgba(187, 134, 252, 0.4);
+    }
+    
+    /* Metric styling */
+    [data-testid="stMetricValue"] {
+        color: #03dac6;
+        font-size: 2rem;
+        font-weight: 600;
+        text-shadow: 0 0 15px rgba(3, 218, 198, 0.4);
+    }
+    
+    [data-testid="stMetricLabel"] {
+        color: #e1e1e1;
+        font-weight: 500;
+    }
+    
+    /* Input styling */
+    .stNumberInput > div > div > input,
+    .stTextInput > div > div > input,
+    .stSelectbox > div > div > select {
+        background: rgba(25, 35, 45, 0.4) !important;
+        border: 1px solid rgba(139, 69, 255, 0.3) !important;
+        border-radius: 12px !important;
+        color: #e1e1e1 !important;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .stNumberInput > div > div > input:focus,
+    .stTextInput > div > div > input:focus,
+    .stSelectbox > div > div > select:focus {
+        border: 1px solid rgba(139, 69, 255, 0.8) !important;
+        box-shadow: 0 0 20px rgba(139, 69, 255, 0.2) !important;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #8b45ff 0%, #03dac6 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(139, 69, 255, 0.3);
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(139, 69, 255, 0.4);
+    }
+    
+    /* Sidebar styling */
+    .css-1d391kg {
+        background: rgba(10, 10, 26, 0.8);
+        backdrop-filter: blur(20px);
+    }
+    
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        background: rgba(25, 35, 45, 0.3);
+        border-radius: 15px;
+        padding: 5px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background: transparent;
+        border-radius: 10px;
+        color: #a0a0a0;
+        transition: all 0.3s ease;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #8b45ff 0%, #03dac6 100%);
+        color: white;
+    }
+    
+    /* DataFrame styling */
+    .stDataFrame {
+        background: rgba(15, 25, 35, 0.3);
+        border-radius: 15px;
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(139, 69, 255, 0.2);
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background: rgba(25, 35, 45, 0.4);
+        border-radius: 12px;
+        border: 1px solid rgba(139, 69, 255, 0.3);
+        backdrop-filter: blur(10px);
+    }
+    
+    /* General text styling */
+    .stMarkdown p, .stMarkdown li {
+        color: #e1e1e1;
+        line-height: 1.6;
+    }
+    
+    /* Strong text highlighting */
+    strong {
+        color: #03dac6;
+        font-weight: 600;
+    }
+    
+    /* Spinner styling */
+    .stSpinner > div {
+        border-color: #bb86fc transparent #03dac6 transparent;
+    }
+    
+    /* Custom glass metric container */
+    .metric-container {
+        background: rgba(15, 25, 35, 0.3);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(139, 69, 255, 0.2);
+        border-radius: 15px;
+        padding: 20px;
+        margin: 10px 0;
+        transition: all 0.3s ease;
+    }
+    
+    .metric-container:hover {
+        border: 1px solid rgba(139, 69, 255, 0.5);
+        box-shadow: 0 8px 25px rgba(139, 69, 255, 0.1);
+    }
+    
+    /* Loading animation */
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    .loading {
+        animation: pulse 2s infinite;
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(25, 35, 45, 0.3);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #8b45ff, #03dac6);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #a055ff, #05e6d0);
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-/* Ensure Streamlit's main content block has a transparent background */
-.main .block-container {
-    background: rgba(0,0,0,0) !important;
-    padding-left: 1rem; /* Adjust padding to give some space around content */
-    padding-right: 1rem;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-}
+# Custom function to wrap content in glass containers
+def glass_container(content):
+    st.markdown(f'<div class="glass-container">{content}</div>', unsafe_allow_html=True)
 
-/* Glassmorphism window styles */
-div.glass-window {
-  background: var(--glass-bg) !important;
-  backdrop-filter: var(--default-blur) !important;
-  border-radius: var(--radius);
-  padding: 1rem; /* Padding inside the glass window */
-  margin-bottom: 1rem; /* Space between glass windows */
-  transition: backdrop-filter 0.3s ease, transform 0.2s ease, border 0.3s ease;
-  border: 1px solid transparent; /* Initially transparent border */
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
-  overflow: hidden; /* Crucial for clipping content that tries to escape */
-}
-div.glass-window:hover {
-  transform: translateY(-4px);
-  backdrop-filter: var(--focus-blur) !important;
-  border: 1px solid var(--border-color);
-}
-
-/* Aggressively reset margins and padding for Streamlit elements INSIDE glass-window */
-/* This targets Streamlit's internal div elements (many use data-testid) */
-div.glass-window > div[data-testid],
-div.glass-window div[data-testid] > div {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* Specific overrides for common Streamlit elements within glass-window */
-div.glass-window h1,
-div.glass-window h2,
-div.glass-window h3,
-div.glass-window h4,
-div.glass-window h5,
-div.glass-window h6,
-div.glass-window p,
-div.glass-window .stMarkdown,
-div.glass-window .stAlert {
-    margin-top: 0.5rem !important; /* A little top margin for text elements */
-    margin-bottom: 0.5rem !important; /* A little bottom margin for text elements */
-    padding: 0 !important;
-}
-
-/* Adjust padding/margins for specific Streamlit components within glass windows for better fit */
-div.glass-window .stPlotlyChart,
-div.glass-window .stDataFrame {
-    margin-top: 0.5rem !important;
-    margin-bottom: 0.5rem !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-}
-
-/* Ensure form elements like selectbox, slider, text_input also fit */
-div.glass-window .stSelectbox,
-div.glass-window .stSlider,
-div.glass-window .stTextInput,
-div.glass-window .stNumberInput,
-div.glass-window .stButton,
-div.glass-window .stExpander {
-    margin-bottom: 0.5rem !important; /* Keep a little space between elements */
-    margin-top: 0.5rem !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-}
-
-/* Ensure columns within glass windows don't have excessive internal padding */
-div.glass-window .st-emotion-cache-xyz-column { /* This targets Streamlit column divs dynamically */
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-/* Ensure the st.tabs container is also contained */
-div.glass-window .stTabs [data-testid="stTab"] {
-    margin: 0 !important;
-    padding: 0.5rem 1rem !important; /* Adjust tab button padding */
-}
-div.glass-window .stTabs [data-testid="stVerticalBlock"] {
-    padding: 1rem !important; /* Padding for the content within selected tab */
-}
-
-
-/* Custom CSS for coloring headings and values */
-h1, h2, h3, h4, h5, h6 {
-    color: #BB86FC !important; /* A soft, muted purple */
-}
-
-[data-testid="stMetricValue"] {
-    color: #03DAC6 !important; /* A clean teal/cyan for values */
-}
-
-strong {
-    color: #03DAC6 !important; /* Apply the value color to bold text as well */
-}
-
-.stMarkdown p, .stText {
-    color: #E0E0E0 !important; /* Ensure general paragraph text remains light gray */
-}
-
-/* Sidebar adjustments for glassmorphism */
-.st-emotion-cache-1ldf15j, .st-emotion-cache-16txt5c { /* Targeting common sidebar container classes */
-    background: var(--glass-bg) !important;
-    backdrop-filter: var(--default-blur) !important;
-    border-radius: var(--radius);
-    padding: 1rem;
-    margin: 1rem;
-    border: 1px solid transparent;
-}
-.st-emotion-cache-1ldf15j:hover, .st-emotion-cache-16txt5c:hover {
-    transform: translateY(-4px);
-    backdrop-filter: var(--focus-blur) !important;
-    border: 1px solid var(--border-color);
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-
-# Helper to create a glassmorphism window (Context Manager version)
-@contextlib.contextmanager
-def glass_window_container():
-    st.markdown("<div class='glass-window'>", unsafe_allow_html=True)
-    yield
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
-
-# Wrap the title in a glass window
-with glass_window_container():
-    st.title("📈 Option Pricing Visualizer")
+# Main title with glassmorphic styling
+st.markdown('<h1 class="main-title">📈 Option Pricing Visualizer</h1>', unsafe_allow_html=True)
 
 # ------------------- Black-Scholes Model -------------------
 def black_scholes(S, K, T, r, sigma, option_type="call"):
@@ -287,103 +369,53 @@ def mc_greeks(S, K, T, r, sigma, option_type="call", num_simulations=10000):
 
     return delta, gamma, theta, vega, rho
 
+# ------------------- Enhanced Plot Styling -------------------
+def style_plotly_chart(fig, title="", dark_theme=True):
+    """Apply consistent dark glassmorphic styling to plotly charts"""
+    fig.update_layout(
+        title=dict(
+            text=title,
+            font=dict(size=20, color='#bb86fc', family='Inter'),
+            x=0.5
+        ),
+        paper_bgcolor='rgba(15, 25, 35, 0.1)',
+        plot_bgcolor='rgba(25, 35, 45, 0.2)',
+        font=dict(color='#e1e1e1', family='Inter'),
+        xaxis=dict(
+            gridcolor='rgba(139, 69, 255, 0.2)',
+            linecolor='rgba(139, 69, 255, 0.4)',
+            titlefont=dict(color='#03dac6'),
+            tickfont=dict(color='#e1e1e1')
+        ),
+        yaxis=dict(
+            gridcolor='rgba(139, 69, 255, 0.2)',
+            linecolor='rgba(139, 69, 255, 0.4)',
+            titlefont=dict(color='#03dac6'),
+            tickfont=dict(color='#e1e1e1')
+        ),
+        legend=dict(
+            bgcolor='rgba(25, 35, 45, 0.5)',
+            bordercolor='rgba(139, 69, 255, 0.3)',
+            borderwidth=1,
+            font=dict(color='#e1e1e1')
+        ),
+        margin=dict(l=20, r=20, t=60, b=20)
+    )
+    return fig
+
 # ------------------- Sidebar Controls -------------------
-# Apply glass window to the entire sidebar section for parameters
+st.sidebar.markdown('<h2 class="section-header">🔧 Configure Parameters</h2>', unsafe_allow_html=True)
+
 with st.sidebar:
-    with glass_window_container():
-        st.markdown("## 🔧 Configure Parameters")
-        selected_model = st.selectbox("Select Pricing Model", ["Black-Scholes", "Binomial Option Pricing", "Monte Carlo Simulation"])
+    selected_model = st.selectbox("Select Pricing Model", ["Black-Scholes", "Binomial Option Pricing", "Monte Carlo Simulation"])
 
-        if selected_model == "Binomial Option Pricing":
-            N_binomial = st.slider("Number of Steps (N)", min_value=10, max_value=1000, value=100, step=10)
-        elif selected_model == "Monte Carlo Simulation":
-            num_simulations_mc = st.slider("Number of Simulations", min_value=1000, max_value=100000, value=10000, step=1000)
-
-    with glass_window_container(): # Wrap stock parameters in glass window
-        with st.expander("📈 Underlying Stock Parameters", expanded=True):
-            # Use session_state to maintain the ticker value across reruns
-            current_ticker = st.session_state.get('ticker_input', 'AAPL')
-
-            # The st.text_input widget
-            ticker = st.text_input("Enter Stock Ticker", value=current_ticker).upper()
-            st.session_state['ticker_input'] = ticker # Update session state with the new ticker value
-
-            # Fetch company name dynamically and display it directly
-            company_name = "N/A"
-            info = get_stock_info(ticker) # Use the cached function
-            fetched_company_name = info.get('longName', '').strip()
-            
-            if fetched_company_name:
-                company_name = fetched_company_name
-                st.write(f"**Company Name:** {company_name}") # Display company name explicitly
-            else:
-                st.write(f"**Company Name:** Not found for '{ticker}'.") # Indicate if not found
-
-            # Initialize defaults and help texts
-            spot_price, vol_est, rf_fetch = 100.0, 0.20, 0.03
-            spot_help_text = "Default value is 100.00. Enter a ticker to fetch live data."
-            vol_help_text = "Default value is 20%. Volatility is estimated from the last 30 days of historical data."
-            rf_help_text = "Default value is 3%. Risk-free rate is fetched based on the stock's market."
-            currency = "$"
-            
-            try:
-                # Use the potentially updated 'ticker' variable for subsequent fetches
-                hist = get_stock_history(ticker, "5d") # Use the cached function
-                if not hist.empty:
-                    spot_price = hist["Close"].iloc[-1]
-                    currency = "₹" if ticker.endswith(".NS") else "$"
-                    spot_help_text = f"Successfully fetched Spot Price: {currency}{spot_price:.2f}"
-
-                    hist30 = get_stock_history(ticker, "30d")["Close"] # Use the cached function
-                    if not hist30.empty:
-                        log_ret = np.log(hist30 / hist30.shift(1)).dropna()
-                        vol_est = np.std(log_ret) * np.sqrt(252)
-                        vol_help_text = f"Estimated Volatility (30d Ann.): {vol_est:.2%}"
-                    else:
-                        vol_help_text = "Could not estimate volatility from 30d history. Using default value."
-                else:
-                    spot_help_text = f"Could not find data for ticker '{ticker}'. Using default value."
-                    vol_help_text = "Could not estimate volatility. Using default value."
-            except Exception as e:
-                spot_help_text = f"Error fetching stock data: {e}. Using defaults."
-                vol_help_text = "Error fetching volatility. Using default."
-
-            S = st.number_input("Spot Price", value=float(spot_price), min_value=0.01, format="%.2f", help=spot_help_text)
-            sigma = st.number_input("Volatility (σ)", min_value=0.01, max_value=2.0, value=round(vol_est, 2), step=0.01, help=vol_help_text)
-
-            # Dynamic Risk-Free Rate Fetching
-            if ticker.endswith(".NS"):
-                rf_ticker, rf_name = "^NSITEN", "India 10Y Bond"
-            else:
-                rf_ticker, rf_name = "^IRX", "US 13W T-Bill"
-
-            try:
-                rf_data = get_stock_history(rf_ticker, "1d")["Close"] # Using cached function
-                if not rf_data.empty:
-                    rf_fetch = rf_data.iloc[-1] / 100
-                    rf_help_text = f"Fetched {rf_name} rate: {rf_fetch:.3%}"
-                else:
-                    rf_help_text = f"Could not fetch {rf_name} rate. Using default."
-            except Exception:
-                rf_help_text = f"Error fetching {rf_name} rate. Using default."
-
-            r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.2, value=float(rf_fetch), step=0.001, format="%.3f", help=rf_help_text)
-
-            # Button to refresh caches
-            if st.button("Refresh"):
-                st.cache_data.clear()
-                try:
-                    st.rerun() 
-                except AttributeError:
-                    pass 
-
-    with glass_window_container(): # Wrap option parameters in glass window
-        with st.expander("⚙️ Option Parameters", expanded=True):
-            K = st.number_input("Strike Price", value=float(spot_price), min_value=0.01, format="%.2f")
-            T = st.number_input("Time to Maturity (yrs)", min_value=0.01, max_value=5.0, value=0.5, step=0.01)
+    if selected_model == "Binomial Option Pricing":
+        N_binomial = st.slider("Number of Steps (N)", min_value=10, max_value=1000, value=100, step=10)
+    elif selected_model == "Monte Carlo Simulation":
+        num_simulations_mc = st.slider("Number of Simulations", min_value=1000, max_value=100000, value=10000, step=1000)
 
 # Caching yfinance info to speed up fetches
-@st.cache_data(ttl=3600) # Cache for 1 hour
+@st.cache_data(ttl=3600)
 def get_stock_info(ticker_symbol):
     try:
         stock_data = yf.Ticker(ticker_symbol)
@@ -391,15 +423,87 @@ def get_stock_info(ticker_symbol):
     except Exception:
         return {}
 
-@st.cache_data(ttl=3600) # Cache for 1 hour
+@st.cache_data(ttl=3600)
 def get_stock_history(ticker_symbol, period):
     try:
         stock_data = yf.Ticker(ticker_symbol)
         return stock_data.history(period=period)
     except Exception:
-        return pd.DataFrame() # Return empty DataFrame on error
+        return pd.DataFrame()
 
-# ------------------- Function to get pricing and greeks based on selected model -------------------
+with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
+    current_ticker = st.session_state.get('ticker_input', 'AAPL')
+    ticker = st.text_input("Enter Stock Ticker", value=current_ticker).upper()
+    st.session_state['ticker_input'] = ticker
+
+    # Fetch company name dynamically
+    company_name = "N/A"
+    info = get_stock_info(ticker)
+    fetched_company_name = info.get('longName', '').strip()
+    
+    if fetched_company_name:
+        company_name = fetched_company_name
+        st.markdown(f"**Company:** {company_name}")
+    else:
+        st.markdown(f"**Company:** Not found for '{ticker}'")
+
+    # Initialize defaults
+    spot_price, vol_est, rf_fetch = 100.0, 0.20, 0.03
+    spot_help_text = "Default value is 100.00. Enter a ticker to fetch live data."
+    vol_help_text = "Default value is 20%. Volatility is estimated from the last 30 days of historical data."
+    rf_help_text = "Default value is 3%. Risk-free rate is fetched based on the stock's market."
+    currency = "$"
+    
+    try:
+        hist = get_stock_history(ticker, "5d")
+        if not hist.empty:
+            spot_price = hist["Close"].iloc[-1]
+            currency = "₹" if ticker.endswith(".NS") else "$"
+            spot_help_text = f"Successfully fetched Spot Price: {currency}{spot_price:.2f}"
+
+            hist30 = get_stock_history(ticker, "30d")["Close"]
+            if not hist30.empty:
+                log_ret = np.log(hist30 / hist30.shift(1)).dropna()
+                vol_est = np.std(log_ret) * np.sqrt(252)
+                vol_help_text = f"Estimated Volatility (30d Ann.): {vol_est:.2%}"
+        else:
+            spot_help_text = f"Could not find data for ticker '{ticker}'. Using default value."
+    except Exception as e:
+        spot_help_text = f"Error fetching stock data: {e}. Using defaults."
+
+    S = st.number_input("Spot Price", value=float(spot_price), min_value=0.01, format="%.2f", help=spot_help_text)
+    sigma = st.number_input("Volatility (σ)", min_value=0.01, max_value=2.0, value=round(vol_est, 2), step=0.01, help=vol_help_text)
+
+    # Dynamic Risk-Free Rate Fetching
+    if ticker.endswith(".NS"):
+        rf_ticker, rf_name = "^NSITEN", "India 10Y Bond"
+    else:
+        rf_ticker, rf_name = "^IRX", "US 13W T-Bill"
+
+    try:
+        rf_data = get_stock_history(rf_ticker, "1d")["Close"]
+        if not rf_data.empty:
+            rf_fetch = rf_data.iloc[-1] / 100
+            rf_help_text = f"Fetched {rf_name} rate: {rf_fetch:.3%}"
+        else:
+            rf_help_text = f"Could not fetch {rf_name} rate. Using default."
+    except Exception:
+        rf_help_text = f"Error fetching {rf_name} rate. Using default."
+
+    r = st.number_input("Risk-Free Rate (r)", min_value=0.0, max_value=0.2, value=float(rf_fetch), step=0.001, format="%.3f", help=rf_help_text)
+
+    if st.button("🔄 Refresh Data"):
+        st.cache_data.clear()
+        try:
+            st.rerun()
+        except AttributeError:
+            pass
+
+with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
+    K = st.number_input("Strike Price", value=float(spot_price), min_value=0.01, format="%.2f")
+    T = st.number_input("Time to Maturity (yrs)", min_value=0.01, max_value=5.0, value=0.5, step=0.01)
+
+# ------------------- Function to get pricing and greeks -------------------
 def get_option_value_and_greeks(model, S, K, T, r, sigma, option_type, **kwargs):
     if model == "Black-Scholes":
         price = black_scholes(S, K, T, r, sigma, option_type)
@@ -427,218 +531,58 @@ with st.spinner(f"Calculating with {selected_model} model, please wait..."):
     put_price, pd, pg, pt, pv, pr = get_option_value_and_greeks(selected_model, S, K, T, r, sigma, "put", **model_params)
 
 # ------------------- TABS -------------------
-# Wrap the tabs themselves in a glass window container
-with glass_window_container():
-    tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📋 Summary", "💸 Payoff Diagram", "📊 Model Comparison", "📈 3D Surface", "🔥 Heatmaps", "🎯 Cross-Section"
-    ])
+tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "📋 Summary", "💸 Payoff Diagram", "📊 Model Comparison", "📈 3D Surface", "🔥 Heatmaps", "🎯 Cross-Section"
+])
 
-    # ------------------- Tab 0: Option Summary -------------------
-    with tab0:
-        # Each section within the tab is also a glass window
-        with glass_window_container(): 
-            st.header(f"Option Valuation ({selected_model})")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.subheader("Call Option")
-                st.metric(label="Price", value=f"{currency} {call_price:.2f}")
-                gcol1, gcol2 = st.columns(2)
-                gcol1.metric(label="Delta (Δ)", value=f"{cd:.4f}")
-                gcol2.metric(label="Gamma (Γ)", value=f"{cg:.4f}")
-                gcol1.metric(label="Vega", value=f"{cv:.4f}")
-                gcol2.metric(label="Theta (Θ)", value=f"{ct:.4f}")
-                gcol1.metric(label="Rho (Ρ)", value=f"{cr:.4f}")
+# ------------------- Tab 0: Option Summary -------------------
+with tab0:
+    st.markdown(f'<h2 class="section-header">Option Valuation ({selected_model})</h2>', unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown('<div class="glass-container">', unsafe_allow_html=True)
+        st.markdown('<h3 class="section-header">📞 Call Option</h3>', unsafe_allow_html=True)
+        st.metric(label="Price", value=f"{currency} {call_price:.2f}")
+        
+        gcol1, gcol2 = st.columns(2)
+        gcol1.metric(label="Delta (Δ)", value=f"{cd:.4f}")
+        gcol2.metric(label="Gamma (Γ)", value=f"{cg:.4f}")
+        gcol1.metric(label="Vega", value=f"{cv:.4f}")
+        gcol2.metric(label="Theta (Θ)", value=f"{ct:.4f}")
+        gcol1.metric(label="Rho (Ρ)", value=f"{cr:.4f}")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-            with col2:
-                st.subheader("Put Option")
-                st.metric(label="Price", value=f"{currency} {put_price:.2f}")
-                gcol1, gcol2 = st.columns(2)
-                gcol1.metric(label="Delta (Δ)", value=f"{pd:.4f}")
-                gcol2.metric(label="Gamma (Γ)", value=f"{pg:.4f}")
-                gcol1.metric(label="Vega", value=f"{pv:.4f}")
-                gcol2.metric(label="Theta (Θ)", value=f"{pt:.4f}")
-                gcol1.metric(label="Rho (Ρ)", value=f"{pr:.4f}")
+    with col2:
+        st.markdown('<div class="glass-container">', unsafe_allow_html=True)
+        st.markdown('<h3 class="section-header">📉 Put Option</h3>', unsafe_allow_html=True)
+        st.metric(label="Price", value=f"{currency} {put_price:.2f}")
+        
+        gcol1, gcol2 = st.columns(2)
+        gcol1.metric(label="Delta (Δ)", value=f"{pd:.4f}")
+        gcol2.metric(label="Gamma (Γ)", value=f"{pg:.4f}")
+        gcol1.metric(label="Vega", value=f"{pv:.4f}")
+        gcol2.metric(label="Theta (Θ)", value=f"{pt:.4f}")
+        gcol1.metric(label="Rho (Ρ)", value=f"{pr:.4f}")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    # ------------------- Tab 1: Payoff Diagram -------------------
-    with tab1:
-        with glass_window_container(): # Wrap tab content in glass window
-            st.header("Profit/Loss at Expiration")
-            spot_range = np.linspace(S * 0.7, S * 1.3, 100)
-            
-            call_payoff = np.maximum(spot_range - K, 0) - call_price
-            put_payoff = np.maximum(K - spot_range, 0) - put_price
-            
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(x=spot_range, y=call_payoff, mode='lines', name='Call Option P/L'))
-            fig.add_trace(go.Scatter(x=spot_range, y=put_payoff, mode='lines', name='Put Option P/L'))
-            fig.add_hline(y=0, line_dash="dash", line_color="gray")
-            fig.add_vline(x=K, line_dash="dash", line_color="red", name="Strike Price")
-
-            fig.update_layout(
-                title="Option Payoff Profile",
-                xaxis_title="Stock Price at Expiration",
-                yaxis_title="Profit / Loss per Share",
-                legend_title="Option Type"
-            )
-            st.plotly_chart(fig, use_container_width=True)
-
-    # ------------------- Tab 2: Model Comparison -------------------
-    with tab2:
-        with glass_window_container(): # Wrap tab content in glass window
-            st.header("Model Price Comparison")
-            with st.spinner("Running all models for comparison..."):
-                # Black-Scholes
-                bs_call, bs_cd, bs_cg, bs_ct, bs_cv, bs_cr = get_option_value_and_greeks("Black-Scholes", S, K, T, r, sigma, "call")
-                bs_put, bs_pd, bs_pg, bs_pt, bs_pv, bs_pr = get_option_value_and_greeks("Black-Scholes", S, K, T, r, sigma, "put")
-
-                # Binomial
-                n_comp = 100
-                if selected_model == "Binomial Option Pricing": n_comp = N_binomial
-                bi_call, bi_cd, bi_cg, bi_ct, bi_cv, bi_cr = get_option_value_and_greeks("Binomial Option Pricing", S, K, T, r, sigma, "call", N=n_comp)
-                bi_put, bi_pd, bi_pg, bi_pt, bi_pv, bi_pr = get_option_value_and_greeks("Binomial Option Pricing", S, K, T, r, sigma, "put", N=n_comp)
-
-                # Monte Carlo
-                sims_comp = 10000
-                if selected_model == "Monte Carlo Simulation": sims_comp = num_simulations_mc
-                mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "call", num_simulations=sims_comp)
-                mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "put", num_simulations=sims_comp)
-
-            st.subheader("Call Option Comparison")
-            st.dataframe(pd.DataFrame({ # Added pd.DataFrame for consistency
-                "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
-                "Black-Scholes": [bs_call, bs_cd, bs_cg, bs_ct, bs_cv, bs_cr],
-                f"Binomial (N={n_comp})": [bi_call, bi_cd, bi_cg, bi_ct, bi_cv, bi_cr],
-                f"Monte Carlo (Sims={sims_comp})": [mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr],
-            }).set_index("Metric"), use_container_width=True)
-            
-            st.subheader("Put Option Comparison")
-            st.dataframe(pd.DataFrame({ # Added pd.DataFrame for consistency
-                "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
-                "Black-Scholes": [bs_put, bs_pd, bs_pg, bs_pt, bs_pv, bs_pr],
-                f"Binomial (N={n_comp})": [bi_put, bi_pd, bi_pg, bi_pt, bi_pv, bi_pr],
-                f"Monte Carlo (Sims={sims_comp})": [mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr],
-            }).set_index("Metric"), use_container_width=True)
-
-    # ------------------- Tab 3: 3D Graphs -------------------
-    with tab3:
-        with glass_window_container(): # Wrap tab content in glass window
-            st.header(f"3D Price Surface ({selected_model})")
-            def plot_3d(option_type, model, **kwargs):
-                spot_range = np.linspace(0.5*S, 1.5*S, 30)
-                time_range = np.linspace(T, 0.01, 30)
-                Spot, Time = np.meshgrid(spot_range, time_range)
-                Z = np.zeros_like(Spot)
-
-                for i in range(Spot.shape[0]):
-                    for j in range(Spot.shape[1]):
-                        # Ensure T is not zero or too small for log/sqrt
-                        time_to_maturity = max(0.0001, Time[i, j]) 
-                        Z[i, j], _, _, _, _, _ = get_option_value_and_greeks(model, Spot[i, j], K, time_to_maturity, r, sigma, option_type.lower(), **kwargs)
-
-                fig = go.Figure(data=[go.Surface(x=Spot, y=Time, z=Z, colorscale='viridis')])
-                fig.update_layout(
-                    title=f"{option_type.capitalize()} Option Price vs. Spot and Time",
-                    scene=dict(xaxis_title="Spot Price", yaxis_title="Time to Maturity", zaxis_title="Option Price"),
-                    margin=dict(l=0, r=0, b=0, t=40))
-                return fig
-
-            st.plotly_chart(plot_3d("call", selected_model, **model_params), use_container_width=True)
-            st.plotly_chart(plot_3d("put", selected_model, **model_params), use_container_width=True)
-
-    # ------------------- Tab 4: Heatmaps -------------------
-    with tab4:
-        with glass_window_container(): # Wrap tab content in glass window
-            st.header(f"Price Heatmaps vs. Spot & Volatility ({selected_model})")
-            
-            with st.expander("Adjust Heatmap Parameters"):
-                min_spot = st.number_input("Min Spot Price", value=round(S * 0.8, 2))
-                max_spot = st.number_input("Max Spot Price", value=round(S * 1.2, 2))
-                min_vol = st.number_input("Min Volatility", value=max(0.01, round(sigma - 0.1, 2)), step=0.01)
-                max_vol = st.number_input("Max Volatility", value=min(1.0, round(sigma + 0.1, 2)), step=0.01)
-
-            display_values = st.toggle("Display Values on Heatmap", value=True) 
-
-            num_points = 10 # Default resolution if values are displayed
-            if not display_values:
-                num_points = st.slider(
-                    "Heatmap Resolution (N x N grid)", 
-                    min_value=5, 
-                    max_value=50, 
-                    value=10, 
-                    step=1,
-                    help="Controls the number of points in the spot and volatility ranges for a smoother heatmap."
-                )
-            
-            spot_range = np.linspace(min_spot, max_spot, num_points)
-            vol_range = np.linspace(min_vol, max_vol, num_points)
-            
-            call_prices = np.zeros((len(vol_range), len(spot_range)))
-            put_prices = np.zeros((len(vol_range), len(spot_range)))
-
-            for i, vol in enumerate(vol_range):
-                for j, spot in enumerate(spot_range):
-                    call_prices[i, j], _, _, _, _, _ = get_option_value_and_greeks(selected_model, spot, K, T, r, vol, "call", **model_params)
-                    put_prices[i, j], _, _, _, _, _ = get_option_value_and_greeks(selected_model, spot, K, T, r, vol, "put", **model_params)
-
-            def plot_plotly_heatmap(prices, spot_range, vol_range, title, show_values):
-                heatmap_trace = go.Heatmap(
-                    z=prices,
-                    x=spot_range,
-                    y=vol_range,
-                    hoverongaps=False,
-                    colorscale='viridis',
-                )
-                if show_values: 
-                    heatmap_trace.text = np.around(prices, 2)
-                    heatmap_trace.texttemplate = "%{text}"
-                    
-                fig = go.Figure(data=heatmap_trace)
-                fig.update_layout(
-                    title=title,
-                    xaxis_title="Spot Price",
-                    yaxis_title="Volatility"
-                )
-                return fig
-
-            col1, col2 = st.columns(2)
-            with col1:
-                st.plotly_chart(plot_plotly_heatmap(call_prices, spot_range, vol_range, "Call Option Prices", display_values), use_container_width=True)
-            with col2:
-                st.plotly_chart(plot_plotly_heatmap(put_prices, spot_range, vol_range, "Put Option Prices", display_values), use_container_width=True)
-
-    # ------------------- Tab 5: Cross-Section -------------------
-    with tab5:
-        with glass_window_container(): # Wrap tab content in glass window
-            st.header("Sensitivity Analysis")
-            col1, col2, col3 = st.columns(3)
-            option_type_cs = col1.selectbox("Option Type", ["Call", "Put"], key="opt_type_cs")
-            y_axis_value = col2.selectbox("Y-Axis Value", ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"], key="y_axis_cs")
-            varying_param = col3.selectbox("Parameter to Vary", ["Spot Price", "Strike Price", "Volatility", "Time to Maturity"], key="var_param_cs")
-            
-            fixed = {"S": S, "K": K, "T": T, "r": r, "sigma": sigma}
-            param_map = {"Spot Price": "S", "Strike Price": "K", "Volatility": "sigma", "Time to Maturity": "T"}
-            var_param_key = param_map[varying_param]
-
-            x_vals = np.linspace(0.7 * fixed[var_param_key], 1.3 * fixed[var_param_key], 100)
-            y_vals = []
-            
-            with st.spinner("Generating sensitivity graph..."):
-                for val in x_vals:
-                    temp = fixed.copy()
-                    temp[var_param_key] = val
-                    # Ensure T is not zero or too small for log/sqrt
-                    if var_param_key == "T":
-                        temp["T"] = max(0.0001, temp["T"])
-                        
-                    price, delta, gamma, theta, vega, rho = get_option_value_and_greeks(selected_model, temp["S"], temp["K"], temp["T"], temp["r"], temp["sigma"], option_type_cs.lower(), **model_params)
-                    greeks_map = {"Price": price, "Delta": delta, "Gamma": gamma, "Theta": theta, "Vega": vega, "Rho": rho}
-                    y_vals.append(greeks_map[y_axis_value])
-
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(x=x_vals, y=y_vals, mode='lines'))
-            fig.update_layout(
-                title=f"{option_type_cs} {y_axis_value} vs. {varying_param} ({selected_model})",
-                xaxis_title=varying_param,
-                yaxis_title=y_axis_value
-            )
-            st.plotly_chart(fig, use_container_width=True)
+# ------------------- Tab 1: Payoff Diagram -------------------
+with tab1:
+    st.markdown('<div class="glass-container">', unsafe_allow_html=True)
+    st.markdown('<h2 class="section-header">💰 Profit/Loss at Expiration</h2>', unsafe_allow_html=True)
+    
+    spot_range = np.linspace(S * 0.7, S * 1.3, 100)
+    call_payoff = np.maximum(spot_range - K, 0) - call_price
+    put_payoff = np.maximum(K - spot_range, 0) - put_price
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=spot_range, y=call_payoff, 
+        mode='lines', name='Call Option P/L',
+        line=dict(color='#03dac6', width=3)
+    ))
+    fig.add_trace(go.Scatter(
+        x=spot_range, y=put_payoff, 
+        mode='lines', name='Put Option P/L',
+        line=dict(color='#bb86fc',
