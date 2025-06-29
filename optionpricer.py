@@ -8,35 +8,160 @@ import pandas as pd # Ensure pandas is imported for DataFrame operations
 st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 st.title("📈 Option Pricing Visualizer")
 
-# --- Custom CSS for coloring headings and values ---
-st.markdown(
-    """
-    <style>
-    /* Color for all headings (H1, H2, H3, etc.) */
-    h1, h2, h3, h4, h5, h6 {
-        color: #BB86FC; /* A soft, muted purple */
-    }
-
-    /* Color for metric values (numbers in st.metric) */
-    [data-testid="stMetricValue"] {
-        color: #03DAC6; /* A clean teal/cyan for values */
+# --- Modern Glassmorphic CSS ---
+st.markdown("""
+<style>
+    /* Global dark theme */
+    .stApp {
+        background: #000000;
+        color: #e0e0e0;
     }
     
-    /* General text color for emphasis where values might appear, e.g., fetched prices */
-    strong {
-        color: #03DAC6; /* Apply the value color to bold text as well */
+    /* Apply glass effect directly to Streamlit's tab content panel */
+    [data-baseweb="tab-panel"] {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 25px;
+        margin-top: 15px; /* Add space between tabs and content */
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
-
-    /* Additional styling if needed for general text elements, adjust as per observation */
-    .stMarkdown p {
-        color: #E0E0E0; /* Ensure general paragraph text remains light gray */
+    
+    /* Header styling */
+    h1, h2, h3, h4, h5, h6 {
+        color: #8A2BE2 !important;
+        text-shadow: 0 0 8px rgba(64, 224, 208, 0.3);
+        font-weight: 600;
     }
-
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
+    
+    /* Main title */
+    .main-title {
+        background: linear-gradient(45deg, #40E0D0, #8A2BE2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 3rem !important;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 2rem;
+        text-shadow: 0 0 12px rgba(64, 224, 208, 0.3);
+    }
+    
+    /* Metric styling */
+    [data-testid="stMetricValue"] {
+        color: #40E0D0 !important;
+        font-size: 2rem !important;
+        font-weight: 700;
+        text-shadow: 0 0 5px rgba(64, 224, 208, 0.5);
+    }
+    
+    [data-testid="stMetricLabel"] {
+        color: #B19CD9 !important;
+        font-weight: 550;
+    }
+    
+    /* Sidebar styling */
+    .css-1d391kg {
+        background: rgba(26, 26, 46, 0.8) !important;
+        backdrop-filter: blur(15px);
+    }
+    
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 5px;
+        backdrop-filter: blur(5px);
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background: transparent;
+        border-radius: 5px;
+        color: #B19CD9;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background: rgba(64, 224, 208, 0.1);
+        color: #40E0D0;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(45deg, rgba(64, 224, 208, 0.2), rgba(138, 43, 226, 0.2)) !important;
+        color: #40E0D0 !important;
+    }
+    
+    /* Input styling */
+    .stNumberInput > div > div > input,
+    .stTextInput > div > div > input,
+    .stSelectbox > div > div > div {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(64, 224, 208, 0.3) !important;
+        border-radius: 10px !important;
+        color: #e0e0e0 !important;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stNumberInput > div > div > input:focus,
+    .stTextInput > div > div > input:focus {
+        border-color: #40E0D0 !important;
+        box-shadow: 0 0 15px rgba(64, 224, 208, 0.3) !important;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(45deg, #40E0D0, #8A2BE2) !important;
+        border: none !important;
+        border-radius: 15px !important;
+        color: white !important;
+        font-weight: 600 !important;
+        padding: 0.5rem 2rem !important;
+        transition: all 0.3s ease !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(64, 224, 208, 0.4) !important;
+    }
+    
+    /* Dataframe styling */
+    .stDataFrame {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 15px;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    
+    /* Toggle styling */
+    .stToggle > div {
+        background: rgba(64, 224, 208, 0.2) !important;
+        border-radius: 20px !important;
+    }
+    
+    /* Slider styling */
+    .stSlider > div > div > div > div {
+        background: linear-gradient(45deg, #40E0D0, #8A2BE2) !important;
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-radius: 10px !important;
+        color: #40E0D0 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Spinner styling */
+    .stSpinner > div {
+        border-top-color: #40E0D0 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 
 
