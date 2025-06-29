@@ -13,7 +13,7 @@ st.markdown("""
     /* Global dark theme */
     .stApp {
         background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-        color: #e0e0e0;
+        color: #000000;
     }
     
     /* Apply glass effect directly to Streamlit's tab content panel */
