@@ -163,7 +163,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title with modern styling
-st.markdown('<h1 class="main-title">📈 Option Pricing Visualizer</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-title">Option Pricing Visualizer</h1>', unsafe_allow_html=True)
 
 # ------------------- Black-Scholes Model -------------------
 def black_scholes(S, K, T, r, sigma, option_type="call"):
