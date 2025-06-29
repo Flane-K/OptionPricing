@@ -7,13 +7,29 @@ import pandas as pd
 
 st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 
-# --- Modern Glassmorphic CSS ---
+# --- Modern Glassmorphic CSS with Hover Effects ---
 st.markdown("""
 <style>
     /* Global dark theme */
     .stApp {
         background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
         color: #e0e0e0;
+    }
+
+    /* NEW: Hover-activated sub-window container */
+    .hover-container {
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 20px;
+        transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .hover-container:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(177, 156, 217, 0.3); /* Purple border on hover */
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
     /* Apply glass effect directly to Streamlit's tab content panel */
@@ -28,14 +44,14 @@ st.markdown("""
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
-    /* Header styling */
+    /* MODIFIED: Header styling to purple */
     h1, h2, h3, h4, h5, h6 {
-        color: #40E0D0 !important;
-        text-shadow: 0 0 10px rgba(64, 224, 208, 0.3);
+        color: #B19CD9 !important; /* Changed to purple */
+        text-shadow: 0 0 10px rgba(177, 156, 217, 0.3); /* Adjusted shadow to match */
         font-weight: 600;
     }
     
-    /* Main title */
+    /* Main title - UNCHANGED */
     .main-title {
         background: linear-gradient(45deg, #40E0D0, #8A2BE2);
         -webkit-background-clip: text;
@@ -48,7 +64,7 @@ st.markdown("""
         text-shadow: none;
     }
     
-    /* Metric styling */
+    /* Metric value styling - UNCHANGED */
     [data-testid="stMetricValue"] {
         color: #40E0D0 !important;
         font-size: 2rem !important;
@@ -456,6 +472,7 @@ tabs = st.tabs([f"{icon} {name}" for icon, name in zip(tab_icons, tab_names)])
 
 # ------------------- Tab 0: Option Summary -------------------
 with tabs[0]:
+    st.markdown('<div class="hover-container">', unsafe_allow_html=True)
     st.header(f"Option Valuation ({selected_model})")
     
     col1, col2 = st.columns(2)
@@ -478,9 +495,11 @@ with tabs[0]:
         gcol1.metric(label="Vega", value=f"{pv:.4f}")
         gcol2.metric(label="Theta (Θ)", value=f"{pt:.4f}")
         gcol1.metric(label="Rho (Ρ)", value=f"{pr:.4f}")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------- Tab 1: Payoff Diagram -------------------
 with tabs[1]:
+    st.markdown('<div class="hover-container">', unsafe_allow_html=True)
     st.header("Profit/Loss at Expiration")
     
     spot_range = np.linspace(S * 0.7, S * 1.3, 100)
@@ -508,9 +527,11 @@ with tabs[1]:
         yaxis_title="Profit / Loss per Share"
     )
     st.plotly_chart(fig, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------- Tab 2: Model Comparison -------------------
 with tabs[2]:
+    st.markdown('<div class="hover-container">', unsafe_allow_html=True)
     st.header("Model Price Comparison")
     with st.spinner("Running all models for comparison..."):
         # Black-Scholes
@@ -544,9 +565,11 @@ with tabs[2]:
         f"Binomial (N={n_comp})": [f"{bi_put:.4f}", f"{bi_pd:.4f}", f"{bi_pg:.4f}", f"{bi_pt:.4f}", f"{bi_pv:.4f}", f"{bi_pr:.4f}"],
         f"Monte Carlo (Sims={sims_comp})": [f"{mc_put:.4f}", f"{mc_pd:.4f}", f"{mc_pg:.4f}", f"{mc_pt:.4f}", f"{mc_pv:.4f}", f"{mc_pr:.4f}"],
     }, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------- Tab 3: 3D Graphs -------------------
 with tabs[3]:
+    st.markdown('<div class="hover-container">', unsafe_allow_html=True)
     st.header(f"3D Price Surface ({selected_model})")
     
     @st.cache_data
@@ -582,9 +605,11 @@ with tabs[3]:
 
     st.plotly_chart(plot_3d("call", selected_model, **model_params), use_container_width=True)
     st.plotly_chart(plot_3d("put", selected_model, **model_params), use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------- Tab 4: Heatmaps -------------------
 with tabs[4]:
+    st.markdown('<div class="hover-container">', unsafe_allow_html=True)
     st.header(f"Price Heatmaps vs. Spot & Volatility ({selected_model})")
     
     with st.expander("Adjust Heatmap Parameters"):
@@ -628,9 +653,11 @@ with tabs[4]:
         st.plotly_chart(plot_plotly_heatmap(call_prices_hm, spot_range_hm, vol_range_hm, "Call Option Prices", display_values), use_container_width=True)
     with col2:
         st.plotly_chart(plot_plotly_heatmap(put_prices_hm, spot_range_hm, vol_range_hm, "Put Option Prices", display_values), use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------- Tab 5: Cross-Section -------------------
 with tabs[5]:
+    st.markdown('<div class="hover-container">', unsafe_allow_html=True)
     st.header("Sensitivity Analysis")
     col1, col2, col3 = st.columns(3)
     option_type_cs = col1.selectbox("Option Type", ["Call", "Put"], key="opt_type_cs")
@@ -671,3 +698,4 @@ with tabs[5]:
         yaxis_title=y_axis_value
     )
     st.plotly_chart(fig, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
