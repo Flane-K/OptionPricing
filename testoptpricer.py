@@ -13,11 +13,12 @@ st.markdown(
     <style>
     /* ------------------- General Theme & Background ------------------- */
     body {
-        color: #E0E0E0;
+        color: #E0E0E0; /* Light grey text for readability */
     }
 
+    /* Set the main background for the app */
     .stApp {
-        background-color: #0E002B;
+        background-color: #0E002B; /* Deep purple-black background */
         background-image:
             radial-gradient(at 20% 25%, hsla(271, 95%, 28%, 0.3) 0px, transparent 50%),
             radial-gradient(at 80% 85%, hsla(212, 95%, 38%, 0.3) 0px, transparent 50%),
@@ -26,103 +27,109 @@ st.markdown(
     }
 
     /* ------------------- Glassmorphic Containers ------------------- */
-    /* Main container for individual windows/panes */
-    .glass-pane {
-        background: rgba(25, 20, 55, 0.55); /* Semi-transparent dark base */
-        border: 1px solid rgba(138, 43, 226, 0.3);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        border-radius: 15px;
+    /* Main content area */
+    .main .block-container {
+        background: rgba(15, 12, 41, 0.5); /* Semi-transparent dark base */
+        border: 1px solid rgba(138, 43, 226, 0.3); /* Subtle purple border */
+        backdrop-filter: blur(15px); /* The frosted glass effect */
+        -webkit-backdrop-filter: blur(15px);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Soft shadow for depth */
+        border-radius: 15px; /* Rounded corners */
         padding: 2rem;
-        margin-bottom: 2rem; /* Space between vertical panes */
-        transition: border 0.3s ease, box-shadow 0.3s ease;
+        transition: border 0.3s ease; /* Smooth transition for hover */
     }
 
-    .glass-pane:hover {
-        border: 1px solid rgba(3, 218, 198, 0.6);
-        box-shadow: 0 0 25px rgba(3, 218, 198, 0.2);
-    }
-    
     /* Sidebar container */
     [data-testid="stSidebar"] > div:first-child {
-        background: rgba(15, 12, 41, 0.6);
+        background: rgba(15, 12, 41, 0.5); /* Matching sidebar background */
         border-right: 1px solid rgba(138, 43, 226, 0.3);
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        border-radius: 0 15px 15px 0;
+        border-radius: 0 15px 15px 0; /* Rounded on the right side */
         transition: box-shadow 0.3s ease;
+    }
+
+    /* ------------------- Interactive Hover Effects ------------------- */
+    .main .block-container:hover,
+    [data-testid="stSidebar"] > div:first-child:hover {
+        border: 1px solid rgba(3, 218, 198, 0.6); /* Highlight with neon blue on hover */
+        box-shadow: 0 0 25px rgba(3, 218, 198, 0.3); /* Add a glow effect */
     }
 
     /* ------------------- Typography & Colors ------------------- */
     h1, h2, h3, h4, h5, h6 {
-        color: #BB86FC;
+        color: #BB86FC; /* Main headings in soft purple */
         font-weight: 700;
     }
 
+    /* Metric values for a distinct look */
     [data-testid="stMetricValue"] {
-        color: #03DAC6;
+        color: #03DAC6; /* Neon teal for metric numbers */
         font-size: 2.2rem;
         font-weight: 700;
     }
 
+    /* Metric labels */
     [data-testid="stMetricLabel"] {
-        color: #A9A9A9;
+        color: #A9A9A9; /* Lighter grey for metric labels */
     }
     
+    /* General text and fetched data emphasis */
     strong, .stMarkdown p {
         color: #E0E0E0;
     }
-
     .stMarkdown strong {
-        color: #03DAC6;
+        color: #03DAC6; /* Make important fetched values stand out */
     }
-    
+
     /* ------------------- Widget Styling ------------------- */
+    /* Style for expanders to match the glass theme */
     .stExpander {
         background: rgba(40, 40, 80, 0.3);
         border: 1px solid rgba(138, 43, 226, 0.2);
         border-radius: 10px;
+        padding: 0.5rem;
+    }
+    .stExpander:hover {
+        border: 1px solid rgba(3, 218, 198, 0.4);
     }
 
+    /* Style for tabs to be more integrated */
     [data-testid="stTabs"] {
         border-bottom: 1px solid #BB86FC;
     }
     
     [data-testid="stTab"] {
         background-color: transparent;
+        color: #A9A9A9;
     }
 
     [data-testid="stTab"][aria-selected="true"] {
         background-color: rgba(187, 134, 252, 0.2);
         color: #BB86FC;
+        border-radius: 5px 5px 0 0;
     }
 
+    /* Button styling */
     .stButton>button {
         background-color: #03DAC6;
         color: #000000;
         border: none;
         border-radius: 8px;
+        transition: background-color 0.3s, transform 0.2s;
     }
+    .stButton>button:hover {
+        background-color: #12F7D6;
+        transform: scale(1.05);
+    }
+
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# --- Helper functions to create glass panes ---
-def open_glass_pane():
-    st.markdown('<div class="glass-pane">', unsafe_allow_html=True)
-
-def close_glass_pane():
-    st.markdown('</div>', unsafe_allow_html=True)
-
-
-# --- Main App Title ---
-open_glass_pane()
 st.title("📈 Option Pricing Visualizer")
-close_glass_pane()
-
 
 # ------------------- Black-Scholes Model -------------------
 def black_scholes(S, K, T, r, sigma, option_type="call"):
@@ -362,40 +369,29 @@ tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
 ])
 
 with tab0:
-    open_glass_pane()
     st.header(f"Option Valuation ({selected_model})")
-    
     col1, col2 = st.columns(2)
     with col1:
-        open_glass_pane()
         st.subheader("Call Option")
         st.metric(label="Price", value=f"{currency} {call_price:.2f}")
-        
         gcol1, gcol2 = st.columns(2)
         gcol1.metric(label="Delta (Δ)", value=f"{cd:.4f}")
         gcol2.metric(label="Gamma (Γ)", value=f"{cg:.4f}")
         gcol1.metric(label="Vega", value=f"{cv:.4f}")
         gcol2.metric(label="Theta (Θ)", value=f"{ct:.4f}")
         gcol1.metric(label="Rho (Ρ)", value=f"{cr:.4f}")
-        close_glass_pane()
 
     with col2:
-        open_glass_pane()
         st.subheader("Put Option")
         st.metric(label="Price", value=f"{currency} {put_price:.2f}")
-        
         gcol1, gcol2 = st.columns(2)
         gcol1.metric(label="Delta (Δ)", value=f"{pd:.4f}")
         gcol2.metric(label="Gamma (Γ)", value=f"{pg:.4f}")
         gcol1.metric(label="Vega", value=f"{pv:.4f}")
-        gcol2.metric(label="Theta (Θ)", value=f"{pt:.4f}")
+        gcol2.metric(label="Theta (Θ)", value=f"{pt:.4f}") # THIS IS THE CORRECTED LINE
         gcol1.metric(label="Rho (Ρ)", value=f"{pr:.4f}")
-        close_glass_pane()
-        
-    close_glass_pane()
 
 with tab1:
-    open_glass_pane()
     st.header("Profit/Loss at Expiration")
     spot_range = np.linspace(S * 0.7, S * 1.3, 100)
     call_payoff = np.maximum(spot_range - K, 0) - call_price
@@ -407,6 +403,7 @@ with tab1:
     fig.add_hline(y=0, line_dash="dash", line_color="grey")
     fig.add_vline(x=K, line_dash="dash", line_color="red", annotation_text="Strike Price")
     fig.update_layout(
+        title="Option Payoff Profile",
         xaxis_title="Stock Price at Expiration",
         yaxis_title="Profit / Loss per Share",
         template=plotly_template,
@@ -414,10 +411,8 @@ with tab1:
         paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
     )
     st.plotly_chart(fig, use_container_width=True)
-    close_glass_pane()
 
 with tab2:
-    open_glass_pane()
     st.header("Model Price Comparison")
     with st.spinner("Running all models for comparison..."):
         bs_call, bs_cd, bs_cg, bs_ct, bs_cv, bs_cr = get_option_value_and_greeks("Black-Scholes", S, K, T, r, sigma, "call")
@@ -446,10 +441,8 @@ with tab2:
         f"Binomial (N={n_comp})": [bi_put, bi_pd, bi_pg, bi_pt, bi_pv, bi_pr],
         f"Monte Carlo (Sims={sims_comp})": [mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr],
     }, use_container_width=True)
-    close_glass_pane()
 
 with tab3:
-    open_glass_pane()
     st.header(f"3D Price Surface ({selected_model})")
     def plot_3d(option_type, model, **kwargs):
         spot_range = np.linspace(0.5*S, 1.5*S, 30)
@@ -471,10 +464,8 @@ with tab3:
 
     st.plotly_chart(plot_3d("call", selected_model, **model_params), use_container_width=True)
     st.plotly_chart(plot_3d("put", selected_model, **model_params), use_container_width=True)
-    close_glass_pane()
 
 with tab4:
-    open_glass_pane()
     st.header(f"Price Heatmaps vs. Spot & Volatility ({selected_model})")
     
     with st.expander("Adjust Heatmap Parameters"):
@@ -506,10 +497,8 @@ with tab4:
         st.plotly_chart(plot_heatmap(call_prices, "Call Option Prices"), use_container_width=True)
     with col2:
         st.plotly_chart(plot_heatmap(put_prices, "Put Option Prices"), use_container_width=True)
-    close_glass_pane()
 
 with tab5:
-    open_glass_pane()
     st.header("Sensitivity Analysis")
     col1, col2, col3 = st.columns(3)
     option_type_cs = col1.selectbox("Option Type", ["Call", "Put"], key="opt_type_cs")
@@ -539,4 +528,3 @@ with tab5:
         template=plotly_template, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
     )
     st.plotly_chart(fig, use_container_width=True)
-    close_glass_pane()
