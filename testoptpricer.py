@@ -141,33 +141,7 @@ st.markdown("""
     [data-testid="stExpander"] > div:has(div.stPlotlyChart),
     [data-testid="stVerticalBlock"] > div:has(div.stPlotlyChart),
     div.stPlotlyChart, /* Direct target if not nested in an expander/block */
-    
-    /* st.dataframe is typically within a div with specific data-testid */
-    [data-testid="stExpander"] > div:has(div.stDataFrame),
-    [data-testid="stVerticalBlock"] > div:has(div.stDataFrame),
-    div.stDataFrame { /* Direct target if not nested in an expander/block */
-        background: rgba(255, 255, 255, 0.05); /* Lighter background for the glass */
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        padding: 20px; /* Adjust padding as needed */
-        margin-top: 15px; /* Spacing above the element */
-        margin-bottom: 15px; /* Spacing below the element */
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        /* Ensure content inside is visible */
-        color: #e0e0e0; 
-    }
-    
-    /* Ensure the actual Plotly graph and DataFrame content blend well */
-    .stPlotlyChart > div { /* Target the inner div of Plotly chart */
-        background: transparent !important;
-    }
 
-    /* Target the table elements within st.dataframe for transparency */
-    .stDataFrame > div > div > div > div > div > div > div > div > table {
-        background: transparent !important;
-    }
 
     /* Toggle styling */
     .stToggle > div {
