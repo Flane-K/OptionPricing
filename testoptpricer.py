@@ -10,9 +10,9 @@ st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 # --- Modern Glassmorphic CSS ---
 st.markdown("""
 <style>
-    /* Global dark theme - Changed to dark black */
+    /* Global dark theme */
     .stApp {
-        background: #000000; /* Dark black background */
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
         color: #e0e0e0;
     }
     
@@ -28,16 +28,16 @@ st.markdown("""
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
-    /* Header styling - Changed to purple */
+    /* Header styling */
     h1, h2, h3, h4, h5, h6 {
-        color: #9370DB !important; /* Purple color */
-        text-shadow: 0 0 10px rgba(147, 112, 219, 0.3); /* Purple shadow */
+        color: #40E0D0 !important;
+        text-shadow: 0 0 10px rgba(64, 224, 208, 0.3);
         font-weight: 600;
     }
     
     /* Main title */
     .main-title {
-        background: linear-gradient(45deg, #9370DB, #40E0D0); /* Gradient with purple and teal */
+        background: linear-gradient(45deg, #40E0D0, #8A2BE2);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -48,7 +48,7 @@ st.markdown("""
         text-shadow: none;
     }
     
-    /* Metric styling - Kept neon bluish */
+    /* Metric styling */
     [data-testid="stMetricValue"] {
         color: #40E0D0 !important;
         font-size: 2rem !important;
@@ -89,7 +89,7 @@ st.markdown("""
     }
     
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(45deg, rgba(64, 224, 208, 0.2), rgba(147, 112, 219, 0.2)) !important; /* Updated gradient for selected tab */
+        background: linear-gradient(45deg, rgba(64, 224, 208, 0.2), rgba(138, 43, 226, 0.2)) !important;
         color: #40E0D0 !important;
     }
     
@@ -112,7 +112,7 @@ st.markdown("""
     
     /* Button styling */
     .stButton > button {
-        background: linear-gradient(45deg, #40E0D0, #9370DB) !important; /* Updated gradient for buttons */
+        background: linear-gradient(45deg, #40E0D0, #8A2BE2) !important;
         border: none !important;
         border-radius: 15px !important;
         color: white !important;
@@ -144,53 +144,20 @@ st.markdown("""
     
     /* Slider styling */
     .stSlider > div > div > div > div {
-        background: linear-gradient(45deg, #40E0D0, #9370DB) !important; /* Updated gradient for slider */
+        background: linear-gradient(45deg, #40E0D0, #8A2BE2) !important;
     }
     
     /* Expander styling */
     .streamlit-expanderHeader {
         background: rgba(255, 255, 255, 0.05) !important;
         border-radius: 10px !important;
-        color: #9370DB !important; /* Changed to purple */
+        color: #40E0D0 !important;
         font-weight: 600 !important;
     }
     
     /* Spinner styling */
     .stSpinner > div {
         border-top-color: #40E0D0 !important;
-    }
-
-    /* New CSS for hover-reveal sub-windows */
-    .hover-reveal-container {
-        background: rgba(255, 255, 255, 0.03); /* Slightly visible background */
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        transition: all 0.3s ease-in-out;
-        opacity: 0.3; /* Initially less visible */
-        filter: blur(2px); /* Initially blurred */
-    }
-
-    .hover-reveal-container:hover {
-        opacity: 1; /* Fully visible on hover */
-        filter: blur(0px); /* Clear on hover */
-        background: rgba(255, 255, 255, 0.08); /* More prominent on hover */
-        border-color: rgba(64, 224, 208, 0.3); /* Highlight border on hover */
-    }
-    
-    /* For content inside the hover-reveal-container */
-    .hover-reveal-content {
-        transition: opacity 0.3s ease-in-out;
-    }
-
-    /* Specific styling for metrics within hover-reveal to keep them neon */
-    .hover-reveal-container [data-testid="stMetricValue"] {
-        color: #40E0D0 !important;
-    }
-    .hover-reveal-container [data-testid="stMetricLabel"] {
-        color: #B19CD9 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -461,7 +428,7 @@ def create_modern_plot_theme():
             'plot_bgcolor': 'rgba(0,0,0,0)',
             'paper_bgcolor': 'rgba(0,0,0,0)',
             'font': {'color': '#e0e0e0', 'family': 'Arial, sans-serif'},
-            'colorway': ['#40E0D0', '#9370DB', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'], # Updated colorway for plots
+            'colorway': ['#40E0D0', '#8A2BE2', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'],
             'xaxis': {
                 'gridcolor': 'rgba(64, 224, 208, 0.2)',
                 'zerolinecolor': 'rgba(64, 224, 208, 0.4)',
@@ -491,8 +458,6 @@ tabs = st.tabs([f"{icon} {name}" for icon, name in zip(tab_icons, tab_names)])
 with tabs[0]:
     st.header(f"Option Valuation ({selected_model})")
     
-    # Corrected placement: HTML div opens, then Streamlit content, then HTML div closes.
-    st.markdown('<div class="hover-reveal-container"><div class="hover-reveal-content">', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("🟢 Call Option")
@@ -513,14 +478,11 @@ with tabs[0]:
         gcol1.metric(label="Vega", value=f"{pv:.4f}")
         gcol2.metric(label="Theta (Θ)", value=f"{pt:.4f}")
         gcol1.metric(label="Rho (Ρ)", value=f"{pr:.4f}")
-    st.markdown('</div></div>', unsafe_allow_html=True)
-
 
 # ------------------- Tab 1: Payoff Diagram -------------------
 with tabs[1]:
     st.header("Profit/Loss at Expiration")
     
-    st.markdown('<div class="hover-reveal-container"><div class="hover-reveal-content">', unsafe_allow_html=True)
     spot_range = np.linspace(S * 0.7, S * 1.3, 100)
     call_payoff = np.maximum(spot_range - K, 0) - call_price
     put_payoff = np.maximum(K - spot_range, 0) - put_price
@@ -534,7 +496,7 @@ with tabs[1]:
     fig.add_trace(go.Scatter(
         x=spot_range, y=put_payoff, 
         mode='lines', name='Put Option P/L',
-        line=dict(color='#9370DB', width=3) # Changed put line color to purple
+        line=dict(color='#8A2BE2', width=3)
     ))
     fig.add_hline(y=0, line_dash="dash", line_color="rgba(224, 224, 224, 0.5)")
     fig.add_vline(x=K, line_dash="dash", line_color="#FF6B6B", annotation_text="Strike")
@@ -546,7 +508,6 @@ with tabs[1]:
         yaxis_title="Profit / Loss per Share"
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown('</div></div>', unsafe_allow_html=True)
 
 # ------------------- Tab 2: Model Comparison -------------------
 with tabs[2]:
@@ -568,7 +529,6 @@ with tabs[2]:
         mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "call", num_simulations=sims_comp)
         mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "put", num_simulations=sims_comp)
 
-    st.markdown('<div class="hover-reveal-container"><div class="hover-reveal-content">', unsafe_allow_html=True)
     st.subheader("Call Option Comparison")
     st.dataframe({
         "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
@@ -584,13 +544,11 @@ with tabs[2]:
         f"Binomial (N={n_comp})": [f"{bi_put:.4f}", f"{bi_pd:.4f}", f"{bi_pg:.4f}", f"{bi_pt:.4f}", f"{bi_pv:.4f}", f"{bi_pr:.4f}"],
         f"Monte Carlo (Sims={sims_comp})": [f"{mc_put:.4f}", f"{mc_pd:.4f}", f"{mc_pg:.4f}", f"{mc_pt:.4f}", f"{mc_pv:.4f}", f"{mc_pr:.4f}"],
     }, use_container_width=True)
-    st.markdown('</div></div>', unsafe_allow_html=True)
 
 # ------------------- Tab 3: 3D Graphs -------------------
 with tabs[3]:
     st.header(f"3D Price Surface ({selected_model})")
     
-    st.markdown('<div class="hover-reveal-container"><div class="hover-reveal-content">', unsafe_allow_html=True)
     @st.cache_data
     def get_3d_data(option_type, model, _S, _K, _T, _r, _sigma, **kwargs):
         spot_range = np.linspace(0.5*_S, 1.5*_S, 30)
@@ -624,13 +582,11 @@ with tabs[3]:
 
     st.plotly_chart(plot_3d("call", selected_model, **model_params), use_container_width=True)
     st.plotly_chart(plot_3d("put", selected_model, **model_params), use_container_width=True)
-    st.markdown('</div></div>', unsafe_allow_html=True)
 
 # ------------------- Tab 4: Heatmaps -------------------
 with tabs[4]:
     st.header(f"Price Heatmaps vs. Spot & Volatility ({selected_model})")
     
-    st.markdown('<div class="hover-reveal-container"><div class="hover-reveal-content">', unsafe_allow_html=True)
     with st.expander("Adjust Heatmap Parameters"):
         min_spot = st.number_input("Min Spot Price", value=round(S * 0.8, 2), key="hm_min_spot")
         max_spot = st.number_input("Max Spot Price", value=round(S * 1.2, 2), key="hm_max_spot")
@@ -672,12 +628,10 @@ with tabs[4]:
         st.plotly_chart(plot_plotly_heatmap(call_prices_hm, spot_range_hm, vol_range_hm, "Call Option Prices", display_values), use_container_width=True)
     with col2:
         st.plotly_chart(plot_plotly_heatmap(put_prices_hm, spot_range_hm, vol_range_hm, "Put Option Prices", display_values), use_container_width=True)
-    st.markdown('</div></div>', unsafe_allow_html=True)
 
 # ------------------- Tab 5: Cross-Section -------------------
 with tabs[5]:
     st.header("Sensitivity Analysis")
-    st.markdown('<div class="hover-reveal-container"><div class="hover-reveal-content">', unsafe_allow_html=True)
     col1, col2, col3 = st.columns(3)
     option_type_cs = col1.selectbox("Option Type", ["Call", "Put"], key="opt_type_cs")
     y_axis_value = col2.selectbox("Y-Axis Value", ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"], key="y_axis_cs")
@@ -717,4 +671,3 @@ with tabs[5]:
         yaxis_title=y_axis_value
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown('</div></div>', unsafe_allow_html=True)
