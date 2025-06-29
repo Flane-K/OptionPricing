@@ -13,6 +13,7 @@ st.markdown("""
   --focus-blur: blur(20px);
   --default-blur: blur(10px);
   --radius: 16px;
+  --border-color: rgba(187, 134, 252, 0.6); /* Muted purple for border */
 }
 #glass-focus {
   position: fixed; inset: 0;
@@ -27,12 +28,33 @@ div.glass-window {
   backdrop-filter: var(--default-blur) !important;
   border-radius: var(--radius);
   padding: 1rem; margin-bottom: 1rem;
-  transition: backdrop-filter 0.3s ease, transform 0.2s ease;
+  transition: backdrop-filter 0.3s ease, transform 0.2s ease, border 0.3s ease; /* Add border to transition */
+  border: 1px solid transparent; /* Initially transparent border */
 }
 div.glass-window:hover {
   transform: translateY(-4px);
   backdrop-filter: var(--focus-blur) !important;
+  border: 1px solid var(--border-color); /* Highlight border on hover */
 }
+
+/* Specific styling for Streamlit's main content area to blur its background */
+.stApp {
+    background-image: url('https://img.freepik.com/free-photo/abstract-textured-backgound_1258-30573.jpg?size=626&ext=jpg&ga=GA1.1.2008272101.1712865600&semt=sph'); /* Replace with your desired background image */
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+/* Ensure the main content area itself isn't fully opaque, allowing background blur */
+.main .block-container {
+    background: rgba(0,0,0,0); /* Make main content background transparent */
+}
+
+/* Adjust Streamlit specific elements if they get unintended blur */
+.stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown strong, .stMetricValue, .stMetricLabel {
+    color: #E0E0E0 !important; /* Ensure text remains visible and light */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Optional: add text shadow for readability */
+}
+
 </style>
 <script>
 window.addEventListener('mousemove', e => {
