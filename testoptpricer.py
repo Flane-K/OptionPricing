@@ -258,7 +258,7 @@ def mc_greeks(S, K, T, r, sigma, option_type="call", num_simulations=10000):
     return delta, gamma, theta, vega, rho
 
 # ------------------- Sidebar Controls -------------------
-with glass_window_container():
+with glass_window_container(): # Wrap sidebar config in glass window
     st.sidebar.markdown("## 🔧 Configure Parameters")
     selected_model = st.sidebar.selectbox("Select Pricing Model", ["Black-Scholes", "Binomial Option Pricing", "Monte Carlo Simulation"])
 
@@ -284,7 +284,7 @@ def get_stock_history(ticker_symbol, period):
     except Exception:
         return pd.DataFrame() # Return empty DataFrame on error
 
-with glass_window_container():
+with glass_window_container(): # Wrap stock parameters in glass window
     with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
         # Use session_state to maintain the ticker value across reruns
         current_ticker = st.session_state.get('ticker_input', 'AAPL')
@@ -362,7 +362,7 @@ with glass_window_container():
             except AttributeError:
                 pass 
 
-with glass_window_container():
+with glass_window_container(): # Wrap option parameters in glass window
     with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
         K = st.number_input("Strike Price", value=float(spot_price), min_value=0.01, format="%.2f")
         T = st.number_input("Time to Maturity (yrs)", min_value=0.01, max_value=5.0, value=0.5, step=0.01)
@@ -401,7 +401,7 @@ tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
 
 # ------------------- Tab 0: Option Summary -------------------
 with tab0:
-    with glass_window_container():
+    with glass_window_container(): # Wrap tab content in glass window
         st.header(f"Option Valuation ({selected_model})")
         col1, col2 = st.columns(2)
         with col1:
@@ -426,7 +426,7 @@ with tab0:
 
 # ------------------- Tab 1: Payoff Diagram -------------------
 with tab1:
-    with glass_window_container():
+    with glass_window_container(): # Wrap tab content in glass window
         st.header("Profit/Loss at Expiration")
         spot_range = np.linspace(S * 0.7, S * 1.3, 100)
         
@@ -449,7 +449,7 @@ with tab1:
 
 # ------------------- Tab 2: Model Comparison -------------------
 with tab2:
-    with glass_window_container():
+    with glass_window_container(): # Wrap tab content in glass window
         st.header("Model Price Comparison")
         with st.spinner("Running all models for comparison..."):
             # Black-Scholes
@@ -469,7 +469,7 @@ with tab2:
             mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "put", num_simulations=sims_comp)
 
         st.subheader("Call Option Comparison")
-        st.dataframe(pd.DataFrame({
+        st.dataframe(pd.DataFrame({ # Added pd.DataFrame for consistency
             "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
             "Black-Scholes": [bs_call, bs_cd, bs_cg, bs_ct, bs_cv, bs_cr],
             f"Binomial (N={n_comp})": [bi_call, bi_cd, bi_cg, bi_ct, bi_cv, bi_cr],
@@ -477,7 +477,7 @@ with tab2:
         }).set_index("Metric"), use_container_width=True)
         
         st.subheader("Put Option Comparison")
-        st.dataframe(pd.DataFrame({
+        st.dataframe(pd.DataFrame({ # Added pd.DataFrame for consistency
             "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
             "Black-Scholes": [bs_put, bs_pd, bs_pg, bs_pt, bs_pv, bs_pr],
             f"Binomial (N={n_comp})": [bi_put, bi_pd, bi_pg, bi_pt, bi_pv, bi_pr],
@@ -486,7 +486,7 @@ with tab2:
 
 # ------------------- Tab 3: 3D Graphs -------------------
 with tab3:
-    with glass_window_container():
+    with glass_window_container(): # Wrap tab content in glass window
         st.header(f"3D Price Surface ({selected_model})")
         def plot_3d(option_type, model, **kwargs):
             spot_range = np.linspace(0.5*S, 1.5*S, 30)
@@ -512,7 +512,7 @@ with tab3:
 
 # ------------------- Tab 4: Heatmaps -------------------
 with tab4:
-    with glass_window_container():
+    with glass_window_container(): # Wrap tab content in glass window
         st.header(f"Price Heatmaps vs. Spot & Volatility ({selected_model})")
         
         with st.expander("Adjust Heatmap Parameters"):
@@ -573,7 +573,7 @@ with tab4:
 
 # ------------------- Tab 5: Cross-Section -------------------
 with tab5:
-    with glass_window_container():
+    with glass_window_container(): # Wrap tab content in glass window
         st.header("Sensitivity Analysis")
         col1, col2, col3 = st.columns(3)
         option_type_cs = col1.selectbox("Option Type", ["Call", "Put"], key="opt_type_cs")
@@ -594,7 +594,7 @@ with tab5:
                 # Ensure T is not zero or too small for log/sqrt
                 if var_param_key == "T":
                     temp["T"] = max(0.0001, temp["T"])
-
+                    
                 price, delta, gamma, theta, vega, rho = get_option_value_and_greeks(selected_model, temp["S"], temp["K"], temp["T"], temp["r"], temp["sigma"], option_type_cs.lower(), **model_params)
                 greeks_map = {"Price": price, "Delta": delta, "Gamma": gamma, "Theta": theta, "Vega": vega, "Rho": rho}
                 y_vals.append(greeks_map[y_axis_value])
