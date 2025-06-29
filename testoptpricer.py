@@ -197,8 +197,6 @@ st.markdown("""
 
 
 
-
-
 # ------------------- Black-Scholes Model -------------------
 def black_scholes(S, K, T, r, sigma, option_type="call"):
     """Calculates the Black-Scholes option price."""
