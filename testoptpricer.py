@@ -43,6 +43,15 @@ st.markdown("""
         border-color: rgba(64, 224, 208, 0.3);
     }
 
+    /* NEW: Sub-window for containers holding a plot or a dataframe */
+    div[data-testid="stVerticalBlock"]:has(div.plotly-graph-div),
+    div[data-testid="stVerticalBlock"]:has(div[data-testid="stDataFrame"]) {
+        border: 1px solid rgba(64, 224, 208, 0.2);
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
     /* Custom styling for the manually created metrics inside sub-containers */
     .metric-label {
         color: #B19CD9 !important;
@@ -122,12 +131,6 @@ st.markdown("""
         backdrop-filter: blur(10px);
     }
     
-    .stNumberInput > div > div > input:focus,
-    .stTextInput > div > div > input:focus {
-        border-color: #40E0D0 !important;
-        box-shadow: 0 0 15px rgba(64, 224, 208, 0.3) !important;
-    }
-    
     /* Button styling */
     .stButton > button {
         background: linear-gradient(45deg, #40E0D0, #8A2BE2) !important;
@@ -141,30 +144,12 @@ st.markdown("""
         letter-spacing: 1px !important;
     }
     
-    .stButton > button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 25px rgba(64, 224, 208, 0.4) !important;
-    }
-    
     /* Dataframe styling */
     .stDataFrame {
         background: rgba(255, 255, 255, 0.02);
         border-radius: 15px;
         overflow: hidden;
         backdrop-filter: blur(10px);
-    }
-    
-    /* Slider styling */
-    .stSlider > div > div > div > div {
-        background: linear-gradient(45deg, #40E0D0, #8A2BE2) !important;
-    }
-    
-    /* Expander styling */
-    .streamlit-expanderHeader {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-radius: 10px !important;
-        color: #40E0D0 !important;
-        font-weight: 600 !important;
     }
     
     /* Spinner styling */
@@ -400,7 +385,7 @@ with tabs[0]:
 
 with tabs[1]:
     st.header("Profit/Loss at Expiration")
-    with st.container(border=True):
+    with st.container(): # FIX: Removed border=True
         spot_range = np.linspace(S * 0.7, S * 1.3, 100)
         call_payoff = np.maximum(spot_range - K, 0) - call_price
         put_payoff = np.maximum(K - spot_range, 0) - put_price
@@ -422,7 +407,7 @@ with tabs[2]:
         mc_call, mc_cd, _, _, _, _ = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "call", **model_params)
         mc_put, mc_pd, _, _, _, _ = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "put", **model_params)
 
-    with st.container(border=True):
+    with st.container(): # FIX: Removed border=True
         st.subheader("Call Option Comparison")
         st.dataframe(pd.DataFrame({
             "Metric": ["Price", "Delta"],
@@ -431,7 +416,7 @@ with tabs[2]:
             f"Monte Carlo": [f"{mc_call:.4f}", f"{mc_cd:.4f}"],
         }), use_container_width=True)
 
-    with st.container(border=True):
+    with st.container(): # FIX: Removed border=True
         st.subheader("Put Option Comparison")
         st.dataframe(pd.DataFrame({
             "Metric": ["Price", "Delta"],
@@ -453,13 +438,13 @@ with tabs[3]:
                 Z[i, j], _, _, _, _, _ = get_option_value_and_greeks(model, Spot[i, j], _K, Time[i, j], _r, _sigma, option_type.lower(), **kwargs)
         return Spot, Time, Z
 
-    with st.container(border=True):
+    with st.container(): # FIX: Removed border=True
         Spot, Time, Z_call = get_3d_data("call", selected_model, S, K, T, r, sigma, **model_params)
         fig_call = go.Figure(data=[go.Surface(x=Spot, y=Time, z=Z_call, colorscale='viridis')])
         fig_call.update_layout(**create_modern_plot_theme()['layout'], title="Call Option Price vs. Spot and Time", scene=dict(xaxis_title="Spot", yaxis_title="Time", zaxis_title="Price"))
         st.plotly_chart(fig_call, use_container_width=True)
 
-    with st.container(border=True):
+    with st.container(): # FIX: Removed border=True
         Spot, Time, Z_put = get_3d_data("put", selected_model, S, K, T, r, sigma, **model_params)
         fig_put = go.Figure(data=[go.Surface(x=Spot, y=Time, z=Z_put, colorscale='plasma')])
         fig_put.update_layout(**create_modern_plot_theme()['layout'], title="Put Option Price vs. Spot and Time", scene=dict(xaxis_title="Spot", yaxis_title="Time", zaxis_title="Price"))
@@ -467,7 +452,7 @@ with tabs[3]:
 
 with tabs[4]:
     st.header(f"Price Heatmaps vs. Spot & Volatility ({selected_model})")
-    with st.container(border=True):
+    with st.container(): # FIX: Removed border=True
         @st.cache_data
         def get_heatmap_data(_model, _S_range, _vol_range, _K, _T, _r, **_params):
             call_prices = np.zeros((len(_vol_range), len(_S_range)))
@@ -495,7 +480,7 @@ with tabs[4]:
             
 with tabs[5]:
     st.header("Sensitivity Analysis")
-    with st.container(border=True):
+    with st.container(): # FIX: Removed border=True
         col1, col2, col3 = st.columns(3)
         option_type_cs = col1.selectbox("Option Type", ["Call", "Put"], key="opt_type_cs")
         y_axis_value = col2.selectbox("Y-Axis", ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"], key="y_axis_cs")
