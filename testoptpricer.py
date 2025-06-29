@@ -5,7 +5,7 @@ import yfinance as yf
 from scipy.stats import norm
 import pandas as pd # Ensure pandas is imported for DataFrame operations
 
-# Inject Glassmorphism CSS and Cursor Focus JS
+# Inject Glassmorphism CSS
 st.markdown("""
 <style>
 :root {
@@ -15,17 +15,36 @@ st.markdown("""
   --radius: 16px;
   --border-color: rgba(187, 134, 252, 0.6); /* Muted purple for border */
 }
-#glass-focus {
-  position: fixed; inset: 0;
-  pointer-events: none;
-  backdrop-filter: var(--default-blur);
-  transition: backdrop-filter 0.2s ease;
-  clip-path: circle(150px at var(--mouse-x) var(--mouse-y));
-  z-index: 9999;
+
+/* Overall app background blur */
+.stApp {
+    /* Ensure the main app content area itself is transparent */
+    background-color: transparent; 
 }
+
+.stApp::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://img.freepik.com/free-photo/abstract-textured-backgound_1258-30573.jpg?size=626&ext=jpg&ga=GA1.1.2008272101.1712865600&semt=sph'); /* Your desired background image */
+    background-size: cover;
+    background-position: center;
+    filter: blur(10px); /* Apply blur directly to the background image */
+    z-index: -1; /* Ensure it's behind all content */
+}
+
+/* Ensure Streamlit's main content block has a transparent background */
+.main .block-container {
+    background: rgba(0,0,0,0) !important; 
+}
+
+/* Glassmorphism window styles */
 div.glass-window {
   background: var(--glass-bg) !important;
-  backdrop-filter: var(--default-blur) !important;
+  backdrop-filter: var(--default-blur) !important; /* Blur behind the window itself */
   border-radius: var(--radius);
   padding: 1rem; margin-bottom: 1rem;
   transition: backdrop-filter 0.3s ease, transform 0.2s ease, border 0.3s ease; /* Add border to transition */
@@ -33,37 +52,30 @@ div.glass-window {
 }
 div.glass-window:hover {
   transform: translateY(-4px);
-  backdrop-filter: var(--focus-blur) !important;
+  backdrop-filter: var(--focus-blur) !important; /* Slightly more blur on hover for the window */
   border: 1px solid var(--border-color); /* Highlight border on hover */
 }
 
-/* Specific styling for Streamlit's main content area to blur its background */
-.stApp {
-    background-image: url('https://img.freepik.com/free-photo/abstract-textured-backgound_1258-30573.jpg?size=626&ext=jpg&ga=GA1.1.2008272101.1712865600&semt=sph'); /* Replace with your desired background image */
-    background-size: cover;
-    background-attachment: fixed;
+/* Custom CSS for coloring headings and values */
+h1, h2, h3, h4, h5, h6 {
+    color: #BB86FC; /* A soft, muted purple */
 }
 
-/* Ensure the main content area itself isn't fully opaque, allowing background blur */
-.main .block-container {
-    background: rgba(0,0,0,0); /* Make main content background transparent */
+[data-testid="stMetricValue"] {
+    color: #03DAC6; /* A clean teal/cyan for values */
 }
 
-/* Adjust Streamlit specific elements if they get unintended blur */
-.stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown strong, .stMetricValue, .stMetricLabel {
-    color: #E0E0E0 !important; /* Ensure text remains visible and light */
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Optional: add text shadow for readability */
+strong {
+    color: #03DAC6; /* Apply the value color to bold text as well */
+}
+
+.stMarkdown p {
+    color: #E0E0E0; /* Ensure general paragraph text remains light gray */
 }
 
 </style>
-<script>
-window.addEventListener('mousemove', e => {
-  document.documentElement.style.setProperty('--mouse-x', e.clientX + 'px');
-  document.documentElement.style.setProperty('--mouse-y', e.clientY + 'px');
-});
-</script>
 """, unsafe_allow_html=True)
-st.markdown("<div id='glass-focus'></div>", unsafe_allow_html=True)
+
 
 # Helper to create a glassmorphism window
 def glass_wrap(func, *args, **kwargs):
@@ -74,36 +86,6 @@ def glass_wrap(func, *args, **kwargs):
 
 st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 glass_wrap(st.title, "📈 Option Pricing Visualizer")
-
-# --- Custom CSS for coloring headings and values ---
-st.markdown(
-    """
-    <style>
-    /* Color for all headings (H1, H2, H3, etc.) */
-    h1, h2, h3, h4, h5, h6 {
-        color: #BB86FC; /* A soft, muted purple */
-    }
-
-    /* Color for metric values (numbers in st.metric) */
-    [data-testid="stMetricValue"] {
-        color: #03DAC6; /* A clean teal/cyan for values */
-    }
-    
-    /* General text color for emphasis where values might appear, e.g., fetched prices */
-    strong {
-        color: #03DAC6; /* Apply the value color to bold text as well */
-    }
-
-    /* Additional styling if needed for general text elements, adjust as per observation */
-    .stMarkdown p {
-        color: #E0E0E0; /* Ensure general paragraph text remains light gray */
-    }
-
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 
 # ------------------- Black-Scholes Model -------------------
 def black_scholes(S, K, T, r, sigma, option_type="call"):
@@ -440,20 +422,20 @@ with tab2:
         mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr = get_option_value_and_greeks("Monte Carlo Simulation", S, K, T, r, sigma, "put", num_simulations=sims_comp)
 
     glass_wrap(st.subheader, "Call Option Comparison")
-    glass_wrap(st.dataframe, {
+    glass_wrap(st.dataframe, pd.DataFrame({
         "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
         "Black-Scholes": [bs_call, bs_cd, bs_cg, bs_ct, bs_cv, bs_cr],
         f"Binomial (N={n_comp})": [bi_call, bi_cd, bi_cg, bi_ct, bi_cv, bi_cr],
         f"Monte Carlo (Sims={sims_comp})": [mc_call, mc_cd, mc_cg, mc_ct, mc_cv, mc_cr],
-    }, use_container_width=True)
+    }).set_index("Metric"), use_container_width=True) # Set index for better display
     
     glass_wrap(st.subheader, "Put Option Comparison")
-    glass_wrap(st.dataframe, {
+    glass_wrap(st.dataframe, pd.DataFrame({
         "Metric": ["Price", "Delta", "Gamma", "Theta", "Vega", "Rho"],
         "Black-Scholes": [bs_put, bs_pd, bs_pg, bs_pt, bs_pv, bs_pr],
         f"Binomial (N={n_comp})": [bi_put, bi_pd, bi_pg, bi_pt, bi_pv, bi_pr],
         f"Monte Carlo (Sims={sims_comp})": [mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr],
-    }, use_container_width=True)
+    }).set_index("Metric"), use_container_width=True) # Set index for better display
 
 # ------------------- Tab 3: 3D Graphs -------------------
 with tab3:
@@ -466,7 +448,9 @@ with tab3:
 
         for i in range(Spot.shape[0]):
             for j in range(Spot.shape[1]):
-                Z[i, j], _, _, _, _, _ = get_option_value_and_greeks(model, Spot[i, j], K, Time[i, j], r, sigma, option_type.lower(), **kwargs)
+                # Ensure T is not zero or too small for log/sqrt
+                time_to_maturity = max(0.0001, Time[i, j]) 
+                Z[i, j], _, _, _, _, _ = get_option_value_and_greeks(model, Spot[i, j], K, time_to_maturity, r, sigma, option_type.lower(), **kwargs)
 
         fig = go.Figure(data=[go.Surface(x=Spot, y=Time, z=Z, colorscale='viridis')])
         fig.update_layout(
@@ -557,6 +541,10 @@ with tab5:
         for val in x_vals:
             temp = fixed.copy()
             temp[var_param_key] = val
+            # Ensure T is not zero or too small for log/sqrt
+            if var_param_key == "T":
+                temp["T"] = max(0.0001, temp["T"])
+
             price, delta, gamma, theta, vega, rho = get_option_value_and_greeks(selected_model, temp["S"], temp["K"], temp["T"], temp["r"], temp["sigma"], option_type_cs.lower(), **model_params)
             greeks_map = {"Price": price, "Delta": delta, "Gamma": gamma, "Theta": theta, "Vega": vega, "Rho": rho}
             y_vals.append(greeks_map[y_axis_value])
