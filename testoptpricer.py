@@ -30,7 +30,7 @@ st.markdown("""
     
     /* Header styling */
     h1, h2, h3, h4, h5, h6 {
-        color: #40E0D0 !important;
+        color: #8A2BE2 !important;
         text-shadow: 0 0 10px rgba(64, 224, 208, 0.3);
         font-weight: 600;
     }
@@ -72,12 +72,12 @@ st.markdown("""
         background: rgba(255, 255, 255, 0.05);
         border-radius: 15px;
         padding: 5px;
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(5px);
     }
     
     .stTabs [data-baseweb="tab"] {
         background: transparent;
-        border-radius: 10px;
+        border-radius: 5px;
         color: #B19CD9;
         font-weight: 500;
         transition: all 0.3s ease;
@@ -163,7 +163,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title with modern styling
-st.markdown('<h1 class="main-title">📈 Option Pricing Visualizer</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-title">Option Pricing Visualizer</h1>', unsafe_allow_html=True)
 
 # ------------------- Black-Scholes Model -------------------
 def black_scholes(S, K, T, r, sigma, option_type="call"):
