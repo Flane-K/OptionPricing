@@ -25,23 +25,10 @@ pip install -r requirements.txt
 streamlit run vibe_coding.py
 ```
 
-> Rename the file as needed if you saved it under a different name.
-
-## 📄 Files
-
-- `vibe_coding.py` - Main Streamlit app.
-- `requirements.txt` - Python package dependencies.
-- `.streamlit/config.toml` *(optional)* - UI theme config for Streamlit (dark mode etc).
 
 ## 🌐 Live Demo
 
 If hosted, access here: [https://optionpricing-flane.streamlit.app](https://optionpricing-flane.streamlit.app)
 
-## 📊 Notes
-
-- Option prices are calculated using the Black-Scholes model.
-- Ticker input uses `yfinance` to fetch real market prices (fallback value if not fetched).
-
----
 
 Built using Streamlit, NumPy, Plotly, and Matplotlib.
