@@ -9,7 +9,7 @@ from scipy.stats import norm
 st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 st.title("📈 Option Pricing Visualizer")
 
-# ------------------- Black-Scholes -------------------
+# Black-Scholes
 def black_scholes(S, K, T, r, sigma, option_type="call"):
     d1 = (np.log(S/K) + (r + 0.5*sigma**2)*T) / (sigma*np.sqrt(T))
     d2 = d1 - sigma * np.sqrt(T)
@@ -29,7 +29,7 @@ def greeks(S, K, T, r, sigma):
     return delta, gamma, theta, vega, rho
 
 
-# ------------------- Underlying Stock Parameters -------------------
+# Underlying Stock Parameters
 st.sidebar.markdown("## 🔧 Configure Parameters")
 
 with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
@@ -85,7 +85,7 @@ with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
                         value=0.5, step=0.01)
 
 
-# ------------------- Heatmap Parameters -------------------
+# Heatmap Parameters
 with st.sidebar.expander("🔥 Heatmap Parameters"):
     # Auto-adjust spot price range ±25%
     auto_min_spot = round(spot_price * 0.75, 2)
@@ -103,7 +103,7 @@ with st.sidebar.expander("🔥 Heatmap Parameters"):
                               value=auto_max_vol, step=0.01, key="heat_max_vol")
 
 
-# ------------------- Cross-Section Generator -------------------
+# Cross-Section Generator
 with st.sidebar.expander("🎯 Cross-Section Generator"):
     option_type = st.selectbox("Option Type", ["Call", "Put"], key="opt_type")
     varying_param = st.selectbox("Parameter to Vary",
@@ -114,7 +114,7 @@ with st.sidebar.expander("🎯 Cross-Section Generator"):
                                 key="y_axis")
 
 
-# ------------------- Tabs -------------------
+# Tabs
 tab0, tab1, tab2, tab3 = st.tabs([
     "📋 Option Summary Table", 
     "📈 3D Graphs", 
@@ -122,7 +122,7 @@ tab0, tab1, tab2, tab3 = st.tabs([
     "📷 Cross-Section"
 ])
 
-# ------------------- Tab 0: Option Table -------------------
+# Tab 0: Option Table
 with tab0:
     call_price = black_scholes(S, K, T, r, sigma, "call")
     put_price = black_scholes(S, K, T, r, sigma, "put")
@@ -178,7 +178,7 @@ with tab0:
         """, unsafe_allow_html=True)
         
         
-# ------------------- Tab 1: 3D Graphs -------------------
+# Tab 1: 3D Graphs
 def plot_3d(option_type):
     spot_range = np.linspace(0.5*S, 1.5*S, 50)
     vol_range = np.linspace(0.05, 0.5, 50)
@@ -203,7 +203,7 @@ with tab1:
     st.plotly_chart(plot_3d("call"), use_container_width=True)
     st.plotly_chart(plot_3d("put"), use_container_width=True)
 
-# ------------------- Tab 2: Heatmaps -------------------
+# Tab 2: Heatmaps
 def plot_heatmaps():
     spot_range = np.round(np.linspace(min_spot, max_spot, 10), 2)
     vol_range = np.round(np.linspace(min_vol, max_vol, 10), 2)
@@ -246,7 +246,7 @@ def plot_heatmaps():
 with tab2 :
     plot_heatmaps()
 
-# ------------------- Tab 3: Cross-Section -------------------
+# Tab 3: Cross-Section
 with tab3:
     fixed = {"S": S, "K": K, "T": T, "r": r, "sigma": sigma}
     param_map = {
