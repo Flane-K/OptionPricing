@@ -3,12 +3,11 @@ import numpy as np
 import plotly.graph_objects as go
 import yfinance as yf
 from scipy.stats import norm
-import pandas as pd # Ensure pandas is imported for DataFrame operations
+import pandas as pd
 
 st.set_page_config(layout="wide", page_title="Option Pricing Visualizer")
 st.title("📈 Option Pricing Visualizer")
 
-# --- Modern Glassmorphic CSS ---
 st.markdown("""
 <style>
     /* Global dark theme */
@@ -167,14 +166,14 @@ st.markdown("""
 
 
 
-# ------------------- Black-Scholes Model -------------------
+# Black-Scholes Model
 def black_scholes(S, K, T, r, sigma, option_type="call"):
     """Calculates the Black-Scholes option price."""
     d1 = (np.log(S / K) + (r + 0.5 * sigma**2) * T) / (sigma * np.sqrt(T))
     d2 = d1 - sigma * np.sqrt(T)
     if option_type.lower() == "call":
         return S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
-    else:  # Put
+    else: 
         return K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
 
 def bs_greeks(S, K, T, r, sigma, option_type="call"):
@@ -189,14 +188,14 @@ def bs_greeks(S, K, T, r, sigma, option_type="call"):
         delta = norm.cdf(d1)
         theta = - (S * norm.pdf(d1) * sigma) / (2 * np.sqrt(T)) - r * K * np.exp(-r * T) * norm.cdf(d2)
         rho = K * T * np.exp(-r * T) * norm.cdf(d2)
-    else:  # Put
+    else: 
         delta = norm.cdf(d1) - 1
         theta = - (S * norm.pdf(d1) * sigma) / (2 * np.sqrt(T)) + r * K * np.exp(-r * T) * norm.cdf(-d2)
         rho = -K * T * np.exp(-r * T) * norm.cdf(-d2)
         
     return delta, gamma, theta, vega, rho
 
-# ------------------- Binomial Option Pricing Model -------------------
+# Binomial Option Pricing Model
 def binomial_option_pricing(S, K, T, r, sigma, option_type="call", N=100):
     """Calculates option price using the Cox-Ross-Rubinstein binomial model."""
     dt = T / N
@@ -249,14 +248,14 @@ def binomial_greeks(S, K, T, r, sigma, option_type="call", N=100):
 
     return delta, gamma, theta, vega, rho
 
-# ------------------- Monte Carlo Simulation Model -------------------
+# Monte Carlo Simulation Model
 def monte_carlo_option_pricing(S, K, T, r, sigma, option_type="call", num_simulations=10000):
     """Calculates option price using Monte Carlo simulation."""
     ST = S * np.exp((r - 0.5 * sigma**2) * T + sigma * np.sqrt(T) * np.random.standard_normal(num_simulations))
     
     if option_type.lower() == "call":
         payoffs = np.maximum(0, ST - K)
-    else: # Put
+    else: 
         payoffs = np.maximum(0, K - ST)
         
     return np.exp(-r * T) * np.mean(payoffs)
@@ -294,7 +293,7 @@ def mc_greeks(S, K, T, r, sigma, option_type="call", num_simulations=10000):
 
     return delta, gamma, theta, vega, rho
 
-# ------------------- Sidebar Controls -------------------
+# Sidebar Controls
 st.sidebar.markdown("## 🔧 Configure Parameters")
 selected_model = st.sidebar.selectbox("Select Pricing Model", ["Black-Scholes", "Binomial Option Pricing", "Monte Carlo Simulation"])
 
@@ -318,7 +317,7 @@ def get_stock_history(ticker_symbol, period):
         stock_data = yf.Ticker(ticker_symbol)
         return stock_data.history(period=period)
     except Exception:
-        return pd.DataFrame() # Return empty DataFrame on error
+        return pd.DataFrame() 
 
 with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
     # Use session_state to maintain the ticker value across reruns
@@ -335,9 +334,9 @@ with st.sidebar.expander("📈 Underlying Stock Parameters", expanded=True):
     
     if fetched_company_name:
         company_name = fetched_company_name
-        st.write(f"**Company Name:** {company_name}") # Display company name explicitly
+        st.write(f"**Company Name:** {company_name}") 
     else:
-        st.write(f"**Company Name:** Not found for '{ticker}'.") # Indicate if not found
+        st.write(f"**Company Name:** Not found for '{ticker}'.") 
 
     # Initialize defaults and help texts
     spot_price, vol_est, rf_fetch = 100.0, 0.20, 0.03
@@ -403,7 +402,7 @@ with st.sidebar.expander("⚙️ Option Parameters", expanded=True):
     K = st.number_input("Strike Price", value=float(spot_price), min_value=0.01, format="%.2f")
     T = st.number_input("Time to Maturity (yrs)", min_value=0.01, max_value=5.0, value=0.5, step=0.01)
 
-# ------------------- Function to get pricing and greeks based on selected model -------------------
+# Function to get pricing and greeks based on selected model
 def get_option_value_and_greeks(model, S, K, T, r, sigma, option_type, **kwargs):
     if model == "Black-Scholes":
         price = black_scholes(S, K, T, r, sigma, option_type)
@@ -419,7 +418,7 @@ def get_option_value_and_greeks(model, S, K, T, r, sigma, option_type, **kwargs)
     
     return price, delta, gamma, theta, vega, rho
 
-# ------------------- Main Calculation Block -------------------
+# Main Calculation Block
 model_params = {}
 if selected_model == "Binomial Option Pricing":
     model_params['N'] = N_binomial
@@ -430,12 +429,12 @@ with st.spinner(f"Calculating with {selected_model} model, please wait..."):
     call_price, cd, cg, ct, cv, cr = get_option_value_and_greeks(selected_model, S, K, T, r, sigma, "call", **model_params)
     put_price, pd, pg, pt, pv, pr = get_option_value_and_greeks(selected_model, S, K, T, r, sigma, "put", **model_params)
 
-# ------------------- TABS -------------------
+# TABS
 tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📋 Summary", "💸 Payoff Diagram", "📊 Model Comparison", "📈 3D Surface", "🔥 Heatmaps", "🎯 Cross-Section"
 ])
 
-# ------------------- Tab 0: Option Summary -------------------
+# Tab 0: Option Summary
 with tab0:
     st.header(f"Option Valuation ({selected_model})")
     col1, col2 = st.columns(2)
@@ -459,7 +458,7 @@ with tab0:
         gcol2.metric(label="Theta (Θ)", value=f"{pt:.4f}")
         gcol1.metric(label="Rho (Ρ)", value=f"{pr:.4f}")
 
-# ------------------- Tab 1: Payoff Diagram -------------------
+# Tab 1: Payoff Diagram
 with tab1:
     st.header("Profit/Loss at Expiration")
     spot_range = np.linspace(S * 0.7, S * 1.3, 100)
@@ -481,7 +480,7 @@ with tab1:
     )
     st.plotly_chart(fig, use_container_width=True)
 
-# ------------------- Tab 2: Model Comparison -------------------
+# Tab 2: Model Comparison
 with tab2:
     st.header("Model Price Comparison")
     with st.spinner("Running all models for comparison..."):
@@ -517,7 +516,7 @@ with tab2:
         f"Monte Carlo (Sims={sims_comp})": [mc_put, mc_pd, mc_pg, mc_pt, mc_pv, mc_pr],
     }, use_container_width=True)
 
-# ------------------- Tab 3: 3D Graphs -------------------
+# Tab 3: 3D Graphs
 with tab3:
     st.header(f"3D Price Surface ({selected_model})")
     def plot_3d(option_type, model, **kwargs):
@@ -540,7 +539,7 @@ with tab3:
     st.plotly_chart(plot_3d("call", selected_model, **model_params), use_container_width=True)
     st.plotly_chart(plot_3d("put", selected_model, **model_params), use_container_width=True)
 
-# ------------------- Tab 4: Heatmaps -------------------
+# Tab 4: Heatmaps
 with tab4:
     st.header(f"Price Heatmaps vs. Spot & Volatility ({selected_model})")
     
@@ -600,7 +599,7 @@ with tab4:
     with col2:
         st.plotly_chart(plot_plotly_heatmap(put_prices, spot_range, vol_range, "Put Option Prices", display_values), use_container_width=True)
 
-# ------------------- Tab 5: Cross-Section -------------------
+# Tab 5: Cross-Section
 with tab5:
     st.header("Sensitivity Analysis")
     col1, col2, col3 = st.columns(3)
