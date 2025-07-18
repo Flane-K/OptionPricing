@@ -1,6 +1,6 @@
 # 📈 Option Pricing Visualizer
 
-This Streamlit web app provides an interactive visualization of Call and Put option pricing using the Black-Scholes model. It includes 3D surface plots, heatmaps, and customizable cross-sectional charts to explore how option prices and Greeks respond to market parameters.
+This Streamlit web app provides an interactive visualization of Call and Put option pricing using Black-Scholes model, Binomial Model and Monte Carlo Simulations. It includes 3D surface plots, heatmaps, and customizable cross-sectional charts to explore how option prices and Greeks respond to market parameters.
 
 ## 🚀 Features
 
@@ -19,16 +19,10 @@ Make sure to install the required Python libraries:
 pip install -r requirements.txt
 ```
 
-## 🔧 How to Run
-
-```bash
-streamlit run vibe_coding.py
-```
-
 
 ## 🌐 Live Demo
 
-If hosted, access here: [https://optionpricing-flane.streamlit.app](https://optionpricing-flane.streamlit.app)
+If hosted, access here: [https://optionpricing-flane.streamlit.app](https://optionpricing-flane2.streamlit.app)
 
 
 Built using Streamlit, NumPy, Plotly, and Matplotlib.
